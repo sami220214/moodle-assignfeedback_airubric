@@ -1,4 +1,4 @@
-<div class="assignfeedback-aifeedback" data-region="assignfeedback-aifeedback" data-cmid="{{cmid}}" data-userid="{{userid}}" data-generating-label="{{generatinglabel}}">
+<div class="assignfeedback-aifeedback" data-region="assignfeedback-aifeedback" data-cmid="{{cmid}}" data-userid="{{userid}}" data-generating-label="{{generatinglabel}}" data-token-count-label="{{tokencountlabel}}">
     {{#eligible}}
     <button type="button" class="btn btn-outline-primary" data-action="open-modal">{{buttonlabel}}</button>
     {{/eligible}}
@@ -19,6 +19,7 @@
                 </div>
                 <div class="modal-body">
                     <p class="text-muted" data-region="status"></p>
+                    <p class="text-muted small d-none" data-region="input-tokens"></p>
                     <label><strong>{{resultlabel}}</strong></label>
                     <textarea class="form-control" rows="10" data-region="feedback-text"></textarea>
                 </div>

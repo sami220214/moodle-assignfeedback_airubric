@@ -51,8 +51,9 @@ define(['core/ajax', 'core/notification', 'jquery'], function(Ajax, Notification
         const modal = root.querySelector('[data-region="feedback-modal"]');
         const textarea = root.querySelector('[data-region="feedback-text"]');
         const status = root.querySelector('[data-region="status"]');
+        const inputTokens = root.querySelector('[data-region="input-tokens"]');
         const copyBtn = root.querySelector('[data-action="copy-feedback"]');
-        if (!modal || !textarea || !status || !copyBtn) {
+        if (!modal || !textarea || !status || !inputTokens || !copyBtn) {
             return;
         }
 
@@ -62,6 +63,8 @@ define(['core/ajax', 'core/notification', 'jquery'], function(Ajax, Notification
             const generating = root.dataset.generatingLabel || 'Generating feedback...';
 
             status.textContent = generating;
+            inputTokens.textContent = '';
+            inputTokens.classList.add('d-none');
             textarea.value = '';
             showModal(modal);
 
@@ -70,6 +73,11 @@ define(['core/ajax', 'core/notification', 'jquery'], function(Ajax, Notification
                 args: {cmid: cmid, userid: userid}
             }])[0].then((result) => {
                 textarea.value = result.feedback || '';
+                if (Number.isFinite(Number(result.inputtokens))) {
+                    inputTokens.textContent = (root.dataset.tokenCountLabel || 'Estimated input tokens: {$a}')
+                        .replace('{$a}', result.inputtokens);
+                    inputTokens.classList.remove('d-none');
+                }
                 status.textContent = '';
                 return result;
             }).catch((error) => {

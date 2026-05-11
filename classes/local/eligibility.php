@@ -4,6 +4,7 @@
 namespace assignfeedback_aifeedback\local;
 
 use assign;
+use assignfeedback_aifeedback\local\submission_text;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -45,9 +46,10 @@ class eligibility {
             return $state;
         }
 
-        $text = $this->get_online_text_submission((int)$submission->id);
+        $reader = new submission_text($this->assignment);
+        $text = $reader->get_text($submission);
         if (trim($text) === '') {
-            $state->reason = get_string('noteligible_noonlinetext', 'assignfeedback_aifeedback');
+            $state->reason = get_string('noteligible_nosubmissiontext', 'assignfeedback_aifeedback');
             return $state;
         }
 
@@ -60,10 +62,8 @@ class eligibility {
      * @return string
      */
     public function get_online_text_submission(int $submissionid): string {
-        global $DB;
-
-        $record = $DB->get_record('assignsubmission_onlinetext', ['submission' => $submissionid], 'onlinetext', IGNORE_MISSING);
-        return $record ? (string)$record->onlinetext : '';
+        $reader = new submission_text($this->assignment);
+        return $reader->get_online_text_submission($submissionid);
     }
 
     /**

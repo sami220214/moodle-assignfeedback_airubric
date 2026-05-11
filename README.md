@@ -3,7 +3,7 @@
 ## 1. Tarkoitus
 `assignfeedback_aifeedback` on Moodle-tehtavaaktiviteetin palautelaajennus, joka tuottaa opettajalle sanallisen palauteluonnoksen:
 - arviointimatriisin (rubric) perusteella
-- opiskelijan online-tekstipalautuksen perusteella
+- opiskelijan online-tekstipalautuksen tai Word-dokumentin (`.docx`/`.doc`) perusteella
 
 Laajennus ei tallenna generoituja palautteita omaan tietokantarakenteeseen.
 
@@ -22,10 +22,10 @@ Lahde: `version.php`.
 3. Kelpoisuus tarkistetaan:
    - tehtavassa on kaytossa rubric-arviointi
    - opiskelijalla on palautus
-   - palautuksessa on online-teksti
+   - palautuksessa on online-teksti tai luettava Word-dokumentti
 4. Opettaja painaa palautepainiketta.
 5. AMD-moduuli kutsuu AJAX-endpointia `assignfeedback_aifeedback_generate_feedback`.
-6. External API hakee rubric-sisallon, opiskelijan online-tekstin ja kutsuu Azure OpenAI -palvelua.
+6. External API hakee rubric-sisallon, opiskelijan online-tekstin ja/tai Word-dokumentin tekstisisallon ja kutsuu Azure OpenAI -palvelua.
 7. Generoitu teksti naytetaan modalin tekstialueessa ja voidaan kopioida leikepoydalle.
 
 ## 4. Arkkitehtuuri
@@ -38,12 +38,15 @@ Lahde: `version.php`.
   - lataa AMD-moduulin `assignfeedback_aifeedback/feedback_button`
 - `classes/local/eligibility.php`
   - kapseloi kelpoisuussaannot
-  - tarkistaa rubricin, palautuksen olemassaolon ja online-tekstin
+  - tarkistaa rubricin, palautuksen olemassaolon ja luettavan palautustekstin
+- `classes/local/submission_text.php`
+  - kokoaa online-tekstin ja Word-tiedostojen tekstisisallon yhdeksi palautustekstiksi
+  - lukee `.docx`-tiedostot OOXML-sisallosta ja `.doc`-tiedostot PHP-pohjaisena best-effort-tekstipoimintana
 - `classes/external/generate_feedback.php`
   - AJAX-kutsuttava external API
   - validoi parametrit, kontekstin ja capabilityt
   - renderoi rubricin grading-controllerin kautta (fallback eri Moodle-signatuureille)
-  - hakee opiskelijan online-tekstin
+  - hakee opiskelijan palautustekstin online-tekstista ja/tai Word-tiedostoista
   - kutsuu Azure-palvelua
 - `classes/service/azure_feedback_service.php`
   - muodostaa HTTP-kutsun Azure OpenAI Chat Completions -rajapintaan
@@ -92,7 +95,7 @@ Pluginin admin-asetukset (`settings.php`):
 
 Lahetettava sisalto muodostetaan external-luokassa:
 - rubric: `strip_tags($rubric)`
-- opiskelijan teksti: `strip_tags($onlinetext)`
+- opiskelijan teksti: online-teksti ja/tai Word-dokumentista luettu teksti
 
 ## 8. Virheenkasittely
 Backend:
@@ -115,7 +118,7 @@ Huomio:
 - tietosuojavaatimukset, sopimukset ja alueelliset kaytannot on varmistettava organisaatiotasolla.
 
 ## 10. Tunnetut rajoitteet
-1. Tuki koskee rubric-arviointia ja online-tekstipalautusta; muut palautustyypit eivat kuulu nykyiseen polkuun.
+1. Tuki koskee rubric-arviointia seka online-tekstipalautusta tai Word-tiedostopalautusta (`.docx`/`.doc`); muut palautustyypit eivat kuulu nykyiseen polkuun.
 2. Generoitu palaute ei tallennu automaattisesti arviointipalautteeksi, vaan opettaja kopioi sen manuaalisesti.
 3. Prompti ei ole erillisena admin-asetuksena, vaan kielijonossa (`systemprompt`).
 4. Plugin-hakemistossa ei ole varsinaista automatisoitua testipakettia (unit/integration).
@@ -125,7 +128,7 @@ Huomio:
 2. Aseta Azure-asetukset (`endpoint`, `apikey`, `deployment`, `api version`).
 3. Varmista capability `assignfeedback/aifeedback:generate` tarvittaville rooleille.
 4. Varmista, etta tehtava-aktiviteetissa kaytetaan rubric-arviointia.
-5. Varmista, etta opiskelijalla on online-tekstipalautus.
+5. Varmista, etta opiskelijalla on online-tekstipalautus tai Word-dokumenttipalautus.
 6. Testaa generointi opettajan nakymasta.
 7. Tarkista Moodle-lokit virhetilanteissa.
 
@@ -136,6 +139,7 @@ Huomio:
 - `db/access.php`
 - `db/services.php`
 - `classes/local/eligibility.php`
+- `classes/local/submission_text.php`
 - `classes/external/generate_feedback.php`
 - `classes/service/azure_feedback_service.php`
 - `classes/privacy/provider.php`

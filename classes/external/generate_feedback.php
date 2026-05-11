@@ -5,6 +5,7 @@ namespace assignfeedback_aifeedback\external;
 
 use assign;
 use assignfeedback_aifeedback\local\eligibility;
+use assignfeedback_aifeedback\local\submission_text;
 use assignfeedback_aifeedback\service\azure_feedback_service;
 use core\context\module as context_module;
 use core_external\external_api;
@@ -96,13 +97,15 @@ class generate_feedback extends external_api {
             }
         }
         $submission = $assign->get_user_submission($params['userid'], false);
-        $onlinetext = $submission ? $checker->get_online_text_submission((int)$submission->id) : '';
+        $reader = new submission_text($assign);
+        $submissiontext = $submission ? $reader->get_text($submission) : '';
 
         $service = new azure_feedback_service();
-        $feedback = $service->generate(strip_tags($rubric), strip_tags($onlinetext));
+        $result = $service->generate_with_usage(strip_tags($rubric), $submissiontext);
 
         return [
-            'feedback' => $feedback,
+            'feedback' => $result['feedback'],
+            'inputtokens' => $result['inputtokens'],
         ];
     }
 
@@ -112,6 +115,7 @@ class generate_feedback extends external_api {
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
             'feedback' => new external_value(PARAM_RAW, 'AI generated feedback text'),
+            'inputtokens' => new external_value(PARAM_INT, 'Estimated input token count sent to AI'),
         ]);
     }
 }

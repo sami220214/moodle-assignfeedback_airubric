@@ -66,6 +66,7 @@ class assign_feedback_aifeedback extends assign_feedback_plugin {
             'copylabel' => get_string('copytoclipboard', 'assignfeedback_aifeedback'),
             'generatinglabel' => get_string('generating', 'assignfeedback_aifeedback'),
             'resultlabel' => get_string('suggestedfeedback', 'assignfeedback_aifeedback'),
+            'tokencountlabel' => get_string('inputtokens', 'assignfeedback_aifeedback'),
         ];
 
         $html = $OUTPUT->render_from_template('assignfeedback_aifeedback/modal', $context);
