@@ -9,10 +9,10 @@ Laajennus ei tallenna generoituja palautteita omaan tietokantarakenteeseen.
 
 ## 2. Versio ja yhteensopivuus
 - Komponentti: `assignfeedback_aifeedback`
-- Versio: `2026021200`
-- Release: `0.2.0`
+- Versio: `2026051115`
+- Release: `0.9.4`
 - Vaatii vahintaan Moodlen: `4.5` (`2024100700`)
-- Kypsyys: `MATURITY_ALPHA`
+- Kypsyys: `MATURITY_BETA`
 
 Lahde: `version.php`.
 
