@@ -4,7 +4,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'assignfeedback_aifeedback';
-$plugin->version = 2026051115;
+$plugin->version = 2026052202;
 $plugin->requires = 2024100700; // Moodle 4.5.
 $plugin->maturity = MATURITY_BETA;
-$plugin->release = '0.9.4';
+$plugin->release = '0.9.7';

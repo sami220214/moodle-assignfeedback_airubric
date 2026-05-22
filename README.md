@@ -3,14 +3,14 @@
 ## 1. Tarkoitus
 `assignfeedback_aifeedback` on Moodle-tehtavaaktiviteetin palautelaajennus, joka tuottaa opettajalle sanallisen palauteluonnoksen:
 - arviointimatriisin (rubric) perusteella
-- opiskelijan online-tekstipalautuksen tai Word-dokumentin (`.docx`/`.doc`) perusteella
+- opiskelijan online-tekstipalautuksen, Word-dokumentin (`.docx`/`.doc`) tai tekstipohjaisen PDF-dokumentin (`.pdf`) perusteella
 
 Laajennus ei tallenna generoituja palautteita omaan tietokantarakenteeseen.
 
 ## 2. Versio ja yhteensopivuus
 - Komponentti: `assignfeedback_aifeedback`
-- Versio: `2026051115`
-- Release: `0.9.4`
+- Versio: `2026052202`
+- Release: `0.9.7`
 - Vaatii vahintaan Moodlen: `4.5` (`2024100700`)
 - Kypsyys: `MATURITY_BETA`
 
@@ -22,10 +22,10 @@ Lahde: `version.php`.
 3. Kelpoisuus tarkistetaan:
    - tehtavassa on kaytossa rubric-arviointi
    - opiskelijalla on palautus
-   - palautuksessa on online-teksti tai luettava Word-dokumentti
+   - palautuksessa on online-teksti, luettava Word-dokumentti tai tekstipohjainen PDF
 4. Opettaja painaa palautepainiketta.
 5. AMD-moduuli kutsuu AJAX-endpointia `assignfeedback_aifeedback_generate_feedback`.
-6. External API hakee rubric-sisallon, opiskelijan online-tekstin ja/tai Word-dokumentin tekstisisallon ja kutsuu Azure OpenAI -palvelua.
+6. External API hakee rubric-sisallon, opiskelijan online-tekstin ja/tai Word-/PDF-dokumentin tekstisisallon ja kutsuu Azure OpenAI -palvelua.
 7. Generoitu teksti naytetaan modalin tekstialueessa ja voidaan kopioida leikepoydalle.
 
 ## 4. Arkkitehtuuri
@@ -40,13 +40,14 @@ Lahde: `version.php`.
   - kapseloi kelpoisuussaannot
   - tarkistaa rubricin, palautuksen olemassaolon ja luettavan palautustekstin
 - `classes/local/submission_text.php`
-  - kokoaa online-tekstin ja Word-tiedostojen tekstisisallon yhdeksi palautustekstiksi
+  - kokoaa online-tekstin ja tuettujen dokumenttitiedostojen tekstisisallon yhdeksi palautustekstiksi
   - lukee `.docx`-tiedostot OOXML-sisallosta ja `.doc`-tiedostot PHP-pohjaisena best-effort-tekstipoimintana
+  - lukee tekstipohjaiset `.pdf`-tiedostot PDF:n tekstikerroksesta best-effort-tekstipoimintana; skannatut PDF:t vaativat OCR:n, eivatka kuulu nykyiseen tukeen
 - `classes/external/generate_feedback.php`
   - AJAX-kutsuttava external API
   - validoi parametrit, kontekstin ja capabilityt
   - renderoi rubricin grading-controllerin kautta (fallback eri Moodle-signatuureille)
-  - hakee opiskelijan palautustekstin online-tekstista ja/tai Word-tiedostoista
+  - hakee opiskelijan palautustekstin online-tekstista ja/tai Word-/PDF-tiedostoista
   - kutsuu Azure-palvelua
 - `classes/service/azure_feedback_service.php`
   - muodostaa HTTP-kutsun Azure OpenAI Chat Completions -rajapintaan
@@ -95,7 +96,7 @@ Pluginin admin-asetukset (`settings.php`):
 
 Lahetettava sisalto muodostetaan external-luokassa:
 - rubric: `strip_tags($rubric)`
-- opiskelijan teksti: online-teksti ja/tai Word-dokumentista luettu teksti
+- opiskelijan teksti: online-teksti ja/tai Word-/PDF-dokumentista luettu teksti
 
 ## 8. Virheenkasittely
 Backend:
@@ -118,7 +119,7 @@ Huomio:
 - tietosuojavaatimukset, sopimukset ja alueelliset kaytannot on varmistettava organisaatiotasolla.
 
 ## 10. Tunnetut rajoitteet
-1. Tuki koskee rubric-arviointia seka online-tekstipalautusta tai Word-tiedostopalautusta (`.docx`/`.doc`); muut palautustyypit eivat kuulu nykyiseen polkuun.
+1. Tuki koskee rubric-arviointia seka online-tekstipalautusta, Word-tiedostopalautusta (`.docx`/`.doc`) tai tekstipohjaista PDF-palautusta (`.pdf`); skannatut PDF:t ja muut palautustyypit eivat kuulu nykyiseen polkuun.
 2. Generoitu palaute ei tallennu automaattisesti arviointipalautteeksi, vaan opettaja kopioi sen manuaalisesti.
 3. Prompti ei ole erillisena admin-asetuksena, vaan kielijonossa (`systemprompt`).
 4. Plugin-hakemistossa ei ole varsinaista automatisoitua testipakettia (unit/integration).
@@ -128,7 +129,7 @@ Huomio:
 2. Aseta Azure-asetukset (`endpoint`, `apikey`, `deployment`, `api version`).
 3. Varmista capability `assignfeedback/aifeedback:generate` tarvittaville rooleille.
 4. Varmista, etta tehtava-aktiviteetissa kaytetaan rubric-arviointia.
-5. Varmista, etta opiskelijalla on online-tekstipalautus tai Word-dokumenttipalautus.
+5. Varmista, etta opiskelijalla on online-tekstipalautus, Word-dokumenttipalautus tai tekstipohjainen PDF-palautus.
 6. Testaa generointi opettajan nakymasta.
 7. Tarkista Moodle-lokit virhetilanteissa.
 
