@@ -17,16 +17,16 @@
 /**
  * AI feedback plugin.
  *
- * @package   assignfeedback_aifeedback
+ * @package   assignfeedback_airubric
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace assignfeedback_aifeedback\external;
+namespace assignfeedback_airubric\external;
 
 use assign;
-use assignfeedback_aifeedback\local\eligibility;
-use assignfeedback_aifeedback\local\submission_text;
-use assignfeedback_aifeedback\service\azure_feedback_service;
+use assignfeedback_airubric\local\eligibility;
+use assignfeedback_airubric\local\submission_text;
+use assignfeedback_airubric\service\azure_feedback_service;
 use core\context\module as context_module;
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -71,14 +71,14 @@ class generate_feedback extends external_api {
         require_sesskey();
         self::validate_context($context);
         require_capability('mod/assign:grade', $context);
-        require_capability('assignfeedback/aifeedback:generate', $context);
+        require_capability('assignfeedback/airubric:generate', $context);
 
         $assign = new assign($context, $cm, $course);
         $checker = new eligibility($assign);
         $state = $checker->for_user($params['userid']);
 
         if (!$state->eligible) {
-            throw new \moodle_exception('noteligible', 'assignfeedback_aifeedback', '', $state->reason);
+            throw new \moodle_exception('noteligible', 'assignfeedback_airubric', '', $state->reason);
         }
 
         $controller = get_grading_manager($context, 'mod_assign', 'submissions')->get_active_controller();

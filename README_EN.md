@@ -1,18 +1,18 @@
-# assignfeedback_aifeedback: technical documentation
+# assignfeedback_airubric: technical documentation
 
 ## 1. Purpose
-`assignfeedback_aifeedback` is a Moodle assignment feedback plugin that produces a draft of written feedback for the teacher:
+`assignfeedback_airubric` is a Moodle assignment feedback plugin that produces a draft of written feedback for the teacher:
 - based on the assessment rubric
 - based on the student's online text submission, Word document (`.docx`/`.doc`), or text-based PDF document (`.pdf`)
 
 The plugin does not store generated feedback in its own database structure.
 
 ## 2. Version and compatibility
-- Component: `assignfeedback_aifeedback`
+- Component: `assignfeedback_airubric`
 - Plugin type: `assignfeedback`
-- Technical name: `aifeedback`
-- Frankenstyle component: `assignfeedback_aifeedback`
-- Installation path: `mod/assign/feedback/aifeedback/`
+- Technical name: `airubric`
+- Frankenstyle component: `assignfeedback_airubric`
+- Installation path: `mod/assign/feedback/airubric/`
 - Version: `2026062300`
 - Release: `1.0.0`
 - Requires at least Moodle: `4.5` (`2024100700`)
@@ -22,13 +22,13 @@ Source: `version.php`.
 
 ## 3. High-level flow
 1. The teacher opens the student's grading view in the assignment.
-2. `locallib.php` renders the button and modal if the teacher has the `assignfeedback/aifeedback:generate` capability.
+2. `locallib.php` renders the button and modal if the teacher has the `assignfeedback/airubric:generate` capability.
 3. Eligibility is checked:
    - rubric grading is enabled for the assignment
    - the student has a submission
    - the submission contains online text, a readable Word document, or a text-based PDF
 4. The teacher clicks the feedback button.
-5. The AMD module calls the AJAX endpoint `assignfeedback_aifeedback_generate_feedback`.
+5. The AMD module calls the AJAX endpoint `assignfeedback_airubric_generate_feedback`.
 6. The External API retrieves the rubric content, the student's online text and/or Word/PDF document text content, and calls Azure OpenAI.
 7. The generated text is shown in the modal textarea and can be copied to the clipboard.
 
@@ -36,10 +36,10 @@ Source: `version.php`.
 
 ### 4.1 Server (PHP)
 - `locallib.php`
-  - defines the `assign_feedback_aifeedback` plugin
+  - defines the `assign_feedback_airubric` plugin
   - checks the capability and eligibility
   - renders the UI (`templates/modal.mustache`)
-  - loads the AMD module `assignfeedback_aifeedback/feedback_button`
+  - loads the AMD module `assignfeedback_airubric/feedback_button`
 - `classes/local/eligibility.php`
   - encapsulates the eligibility rules
   - checks the rubric, submission existence, and readable submission text
@@ -70,23 +70,23 @@ Source: `version.php`.
 
 ## 5. Permissions and registration
 - AJAX function: `db/services.php`
-  - `assignfeedback_aifeedback_generate_feedback`
+  - `assignfeedback_airubric_generate_feedback`
   - type `write`, `ajax => true`
 - Capability: `db/access.php`
-  - `assignfeedback/aifeedback:generate`
+  - `assignfeedback/airubric:generate`
   - allowed by default for the `editingteacher` and `manager` roles
 - The External API requires:
   - a logged-in user (`require_login`)
   - a valid sesskey (`require_sesskey`)
   - `mod/assign:grade`
-  - `assignfeedback/aifeedback:generate`
+  - `assignfeedback/airubric:generate`
 
 ## 6. Settings
 Plugin admin settings (`settings.php`):
-- `assignfeedback_aifeedback/azureendpoint`
-- `assignfeedback_aifeedback/azureapikey`
-- `assignfeedback_aifeedback/azuredeployment` (default `gpt-5-mini`)
-- `assignfeedback_aifeedback/azureapiversion` (default `2024-12-01-preview`)
+- `assignfeedback_airubric/azureendpoint`
+- `assignfeedback_airubric/azureapikey`
+- `assignfeedback_airubric/azuredeployment` (default `gpt-5-mini`)
+- `assignfeedback_airubric/azureapiversion` (default `2024-12-01-preview`)
 
 ## 7. Azure integration
 `azure_feedback_service::generate($rubric, $submission)`:
@@ -138,7 +138,7 @@ Notes:
 ## 11. Deployment checklist
 1. Install the plugin in Moodle.
 2. Configure the Azure settings (`endpoint`, `apikey`, `deployment`, `api version`).
-3. Ensure the `assignfeedback/aifeedback:generate` capability is granted to the required roles.
+3. Ensure the `assignfeedback/airubric:generate` capability is granted to the required roles.
 4. Ensure the assignment activity uses rubric grading.
 5. Ensure the student has an online text submission, Word document submission, or text-based PDF submission.
 6. Test generation from the teacher view.
@@ -161,8 +161,8 @@ Notes:
 - `templates/modal.mustache`
 - `amd/src/feedback_button.js`
 - `amd/build/feedback_button.min.js`
-- `lang/fi/assignfeedback_aifeedback.php`
-- `lang/en/assignfeedback_aifeedback.php`
+- `lang/fi/assignfeedback_airubric.php`
+- `lang/en/assignfeedback_airubric.php`
 
 ## 13. License and third-party libraries
 All PHP files in the plugin are licensed under GNU GPL v3 or later through the Moodle file header. The plugin does not bundle separate third-party libraries; the AMD module uses Moodle-provided `core/ajax`, `core/notification`, and `jquery` modules, and the UI uses the Moodle/theme Bootstrap modal API. Therefore a separate `thirdpartylibs.xml` file is not required for the current package.

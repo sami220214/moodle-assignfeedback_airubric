@@ -17,20 +17,20 @@
 /**
  * AI feedback plugin.
  *
- * @package   assignfeedback_aifeedback
+ * @package   assignfeedback_airubric
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
-    'assignfeedback_aifeedback_generate_feedback' => [
-        'classname' => 'assignfeedback_aifeedback\\external\\generate_feedback',
+    'assignfeedback_airubric_generate_feedback' => [
+        'classname' => 'assignfeedback_airubric\\external\\generate_feedback',
         'methodname' => 'execute',
         'classpath' => '',
         'description' => 'Generate textual feedback from rubric and online text, Word document, or text-based PDF submission.',
         'type' => 'write',
         'ajax' => true,
-        'capabilities' => 'assignfeedback/aifeedback:generate',
+        'capabilities' => 'assignfeedback/airubric:generate',
     ],
 ];

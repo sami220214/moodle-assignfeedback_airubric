@@ -17,11 +17,11 @@
 /**
  * AI feedback plugin.
  *
- * @package   assignfeedback_aifeedback
+ * @package   assignfeedback_airubric
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace assignfeedback_aifeedback\local;
+namespace assignfeedback_airubric\local;
 
 use assign;
 use stored_file;
@@ -131,7 +131,7 @@ class submission_text {
             return '';
         }
 
-        $temppath = $file->copy_content_to_temp('assignfeedback_aifeedback', 'submission.docx');
+        $temppath = $file->copy_content_to_temp('assignfeedback_airubric', 'submission.docx');
         $zip = new \ZipArchive();
         $opened = false;
 

@@ -17,11 +17,11 @@
 /**
  * AI feedback plugin.
  *
- * @package   assignfeedback_aifeedback
+ * @package   assignfeedback_airubric
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-use assignfeedback_aifeedback\local\eligibility;
+use assignfeedback_airubric\local\eligibility;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -30,14 +30,14 @@ require_once($CFG->dirroot . '/mod/assign/feedbackplugin.php');
 /**
  * AI feedback plugin for assignment grading.
  */
-class assign_feedback_aifeedback extends assign_feedback_plugin {
+class assign_feedback_airubric extends assign_feedback_plugin {
     /**
      * Return the feedback plugin display name.
      *
      * @return string
      */
     public function get_name() {
-        return get_string('pluginname', 'assignfeedback_aifeedback');
+        return get_string('pluginname', 'assignfeedback_airubric');
     }
 
     /**
@@ -60,7 +60,7 @@ class assign_feedback_aifeedback extends assign_feedback_plugin {
     public function get_form_elements($submissionorgrade, MoodleQuickForm $mform, stdClass $data) {
         global $PAGE, $OUTPUT;
 
-        if (!has_capability('assignfeedback/aifeedback:generate', $this->assignment->get_context())) {
+        if (!has_capability('assignfeedback/airubric:generate', $this->assignment->get_context())) {
             return true;
         }
 
@@ -81,18 +81,18 @@ class assign_feedback_aifeedback extends assign_feedback_plugin {
             'cmid' => (int)$this->assignment->get_course_module()->id,
             'eligible' => $state->eligible,
             'reason' => $state->reason,
-            'buttonlabel' => get_string('generatefeedback', 'assignfeedback_aifeedback'),
-            'modaltitle' => get_string('modaltitle', 'assignfeedback_aifeedback'),
-            'copylabel' => get_string('copytoclipboard', 'assignfeedback_aifeedback'),
-            'generatinglabel' => get_string('generating', 'assignfeedback_aifeedback'),
-            'resultlabel' => get_string('suggestedfeedback', 'assignfeedback_aifeedback'),
-            'tokencountlabel' => get_string('inputtokens', 'assignfeedback_aifeedback'),
+            'buttonlabel' => get_string('generatefeedback', 'assignfeedback_airubric'),
+            'modaltitle' => get_string('modaltitle', 'assignfeedback_airubric'),
+            'copylabel' => get_string('copytoclipboard', 'assignfeedback_airubric'),
+            'generatinglabel' => get_string('generating', 'assignfeedback_airubric'),
+            'resultlabel' => get_string('suggestedfeedback', 'assignfeedback_airubric'),
+            'tokencountlabel' => get_string('inputtokens', 'assignfeedback_airubric'),
         ];
 
-        $html = $OUTPUT->render_from_template('assignfeedback_aifeedback/modal', $context);
-        $mform->addElement('static', 'assignfeedback_aifeedback_control', get_string('pluginname', 'assignfeedback_aifeedback'), $html);
+        $html = $OUTPUT->render_from_template('assignfeedback_airubric/modal', $context);
+        $mform->addElement('static', 'assignfeedback_airubric_control', get_string('pluginname', 'assignfeedback_airubric'), $html);
 
-        $PAGE->requires->js_call_amd('assignfeedback_aifeedback/feedback_button', 'init');
+        $PAGE->requires->js_call_amd('assignfeedback_airubric/feedback_button', 'init');
         return true;
     }
 

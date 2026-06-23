@@ -17,14 +17,14 @@
 /**
  * AI feedback plugin.
  *
- * @package   assignfeedback_aifeedback
+ * @package   assignfeedback_airubric
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace assignfeedback_aifeedback\local;
+namespace assignfeedback_airubric\local;
 
 use assign;
-use assignfeedback_aifeedback\local\submission_text;
+use assignfeedback_airubric\local\submission_text;
 use stdClass;
 
 defined('MOODLE_INTERNAL') || die();
@@ -56,20 +56,20 @@ class eligibility {
         ];
 
         if (!$this->has_rubric()) {
-            $state->reason = get_string('noteligible_norubric', 'assignfeedback_aifeedback');
+            $state->reason = get_string('noteligible_norubric', 'assignfeedback_airubric');
             return $state;
         }
 
         $submission = $this->assignment->get_user_submission($userid, false);
         if (!$submission) {
-            $state->reason = get_string('noteligible_nosubmission', 'assignfeedback_aifeedback');
+            $state->reason = get_string('noteligible_nosubmission', 'assignfeedback_airubric');
             return $state;
         }
 
         $reader = new submission_text($this->assignment);
         $text = $reader->get_text($submission);
         if (trim($text) === '') {
-            $state->reason = get_string('noteligible_nosubmissiontext', 'assignfeedback_aifeedback');
+            $state->reason = get_string('noteligible_nosubmissiontext', 'assignfeedback_airubric');
             return $state;
         }
 

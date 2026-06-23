@@ -69,7 +69,7 @@ define(['core/ajax', 'core/notification', 'jquery'], function(Ajax, Notification
             showModal(modal);
 
             Ajax.call([{
-                methodname: 'assignfeedback_aifeedback_generate_feedback',
+                methodname: 'assignfeedback_airubric_generate_feedback',
                 args: {cmid: cmid, userid: userid}
             }])[0].then((result) => {
                 textarea.value = result.feedback || '';
@@ -96,7 +96,7 @@ define(['core/ajax', 'core/notification', 'jquery'], function(Ajax, Notification
 
     return {
         init: () => {
-            document.querySelectorAll('[data-region="assignfeedback-aifeedback"]').forEach(initOne);
+            document.querySelectorAll('[data-region="assignfeedback-airubric"]').forEach(initOne);
         }
     };
 });

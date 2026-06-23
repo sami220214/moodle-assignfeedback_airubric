@@ -17,7 +17,7 @@
 /**
  * AI feedback plugin.
  *
- * @package   assignfeedback_aifeedback
+ * @package   assignfeedback_airubric
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,30 +25,30 @@ defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext(
-        'assignfeedback_aifeedback/azureendpoint',
-        get_string('azureendpoint', 'assignfeedback_aifeedback'),
-        get_string('azureendpoint_desc', 'assignfeedback_aifeedback'),
+        'assignfeedback_airubric/azureendpoint',
+        get_string('azureendpoint', 'assignfeedback_airubric'),
+        get_string('azureendpoint_desc', 'assignfeedback_airubric'),
         ''
     ));
 
     $settings->add(new admin_setting_configpasswordunmask(
-        'assignfeedback_aifeedback/azureapikey',
-        get_string('azureapikey', 'assignfeedback_aifeedback'),
-        get_string('azureapikey_desc', 'assignfeedback_aifeedback'),
+        'assignfeedback_airubric/azureapikey',
+        get_string('azureapikey', 'assignfeedback_airubric'),
+        get_string('azureapikey_desc', 'assignfeedback_airubric'),
         ''
     ));
 
     $settings->add(new admin_setting_configtext(
-        'assignfeedback_aifeedback/azuredeployment',
-        get_string('azuredeployment', 'assignfeedback_aifeedback'),
-        get_string('azuredeployment_desc', 'assignfeedback_aifeedback'),
+        'assignfeedback_airubric/azuredeployment',
+        get_string('azuredeployment', 'assignfeedback_airubric'),
+        get_string('azuredeployment_desc', 'assignfeedback_airubric'),
         'gpt-5-mini'
     ));
 
     $settings->add(new admin_setting_configtext(
-        'assignfeedback_aifeedback/azureapiversion',
-        get_string('azureapiversion', 'assignfeedback_aifeedback'),
-        get_string('azureapiversion_desc', 'assignfeedback_aifeedback'),
+        'assignfeedback_airubric/azureapiversion',
+        get_string('azureapiversion', 'assignfeedback_airubric'),
+        get_string('azureapiversion_desc', 'assignfeedback_airubric'),
         '2024-12-01-preview'
     ));
 }

@@ -17,11 +17,11 @@
 /**
  * AI feedback plugin.
  *
- * @package   assignfeedback_aifeedback
+ * @package   assignfeedback_airubric
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace assignfeedback_aifeedback\privacy;
+namespace assignfeedback_airubric\privacy;
 
 use core_privacy\local\metadata\collection;
 use core_privacy\local\metadata\provider as metadata_provider;
@@ -29,7 +29,7 @@ use core_privacy\local\metadata\provider as metadata_provider;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Privacy provider for assignfeedback_aifeedback.
+ * Privacy provider for assignfeedback_airubric.
  */
 class provider implements metadata_provider {
     /**

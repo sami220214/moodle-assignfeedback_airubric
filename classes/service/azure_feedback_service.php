@@ -17,11 +17,11 @@
 /**
  * AI feedback plugin.
  *
- * @package   assignfeedback_aifeedback
+ * @package   assignfeedback_airubric
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace assignfeedback_aifeedback\service;
+namespace assignfeedback_airubric\service;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -52,17 +52,17 @@ class azure_feedback_service {
         global $CFG;
         require_once($CFG->libdir . '/filelib.php');
 
-        $endpoint = trim((string)get_config('assignfeedback_aifeedback', 'azureendpoint'));
-        $apikey = trim((string)get_config('assignfeedback_aifeedback', 'azureapikey'));
-        $deployment = trim((string)get_config('assignfeedback_aifeedback', 'azuredeployment'));
-        $apiversion = trim((string)get_config('assignfeedback_aifeedback', 'azureapiversion'));
+        $endpoint = trim((string)get_config('assignfeedback_airubric', 'azureendpoint'));
+        $apikey = trim((string)get_config('assignfeedback_airubric', 'azureapikey'));
+        $deployment = trim((string)get_config('assignfeedback_airubric', 'azuredeployment'));
+        $apiversion = trim((string)get_config('assignfeedback_airubric', 'azureapiversion'));
 
         if ($endpoint === '' || $apikey === '' || $deployment === '' || $apiversion === '') {
-            throw new \moodle_exception('azureconfigmissing', 'assignfeedback_aifeedback');
+            throw new \moodle_exception('azureconfigmissing', 'assignfeedback_airubric');
         }
 
         $url = rtrim($endpoint, '/') . '/openai/deployments/' . rawurlencode($deployment) . '/chat/completions?api-version=' . urlencode($apiversion);
-        $systemprompt = trim(get_string('systemprompt', 'assignfeedback_aifeedback'));
+        $systemprompt = trim(get_string('systemprompt', 'assignfeedback_airubric'));
 
         $payload = [
             'messages' => [
@@ -79,7 +79,7 @@ class azure_feedback_service {
         ];
         $inputtokens = self::estimate_messages_tokens($payload['messages']);
         if ($inputtokens > self::MAX_INPUT_TOKENS) {
-            throw new \moodle_exception('inputtokenlimitexceeded', 'assignfeedback_aifeedback', '', [
+            throw new \moodle_exception('inputtokenlimitexceeded', 'assignfeedback_airubric', '', [
                 'tokens' => $inputtokens,
                 'limit' => self::MAX_INPUT_TOKENS,
             ]);
@@ -97,16 +97,16 @@ class azure_feedback_service {
         ]);
 
         if ($curl->get_errno() !== 0) {
-            throw new \moodle_exception('azurecommunicationerror', 'assignfeedback_aifeedback', '', $curl->error);
+            throw new \moodle_exception('azurecommunicationerror', 'assignfeedback_airubric', '', $curl->error);
         }
 
         $decoded = json_decode($response, true);
         if (is_array($decoded) && !empty($decoded['error']['message'])) {
-            throw new \moodle_exception('azurecommunicationerror', 'assignfeedback_aifeedback', '', $decoded['error']['message']);
+            throw new \moodle_exception('azurecommunicationerror', 'assignfeedback_airubric', '', $decoded['error']['message']);
         }
 
         if (!is_array($decoded) || empty($decoded['choices'][0]['message']['content'])) {
-            throw new \moodle_exception('azureinvalidresponse', 'assignfeedback_aifeedback', '', $response);
+            throw new \moodle_exception('azureinvalidresponse', 'assignfeedback_airubric', '', $response);
         }
 
         return [
