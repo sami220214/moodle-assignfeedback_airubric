@@ -1,9 +1,29 @@
 <?php
 // This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * AI feedback plugin.
+ *
+ * @package   assignfeedback_aifeedback
+ * @copyright 2026 Sami Simpanen
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 $string['pluginname'] = 'AI feedback assistant';
 $string['generatefeedback'] = 'Feedback';
-$string['systemprompt'] = 'You act as a lecturer at a university of applied sciences and provide the student with only written (verbal) feedback based on the assessment rubric every criteria in English only, without any concluding questions :';
+$string['systemprompt'] = 'You act as a university of applied sciences teacher and provide only constructive written feedback on a student submission, based on all criteria of the assessment matrix, criterion by criterion, without any concluding questions. Do not use external sources when generating the feedback. Do not invent content that is not present in the student\'s text. If material is missing, clearly state what is missing.';
 $string['modaltitle'] = 'Generate verbal feedback from rubric';
 $string['copytoclipboard'] = 'Copy feedback';
 $string['closebutton'] = 'Close';
@@ -19,7 +39,10 @@ $string['noteligible_nosubmissiontext'] = 'Student submission does not contain o
 $string['azureconfigmissing'] = 'Azure OpenAI settings are incomplete.';
 $string['azurecommunicationerror'] = 'Azure OpenAI request failed: {$a}';
 $string['azureinvalidresponse'] = 'Azure OpenAI returned an invalid response: {$a}';
-$string['privacy:metadata'] = 'The AI feedback assistant plugin does not store personal data.';
+$string['privacy:metadata'] = 'The AI feedback assistant plugin does not store personal data in its own database tables.';
+$string['privacy:metadata:azure_openai'] = 'The AI feedback assistant sends assignment submission text and rubric assessment criteria to the configured Azure OpenAI endpoint to generate suggested written feedback.';
+$string['privacy:metadata:azure_openai:submissiontext'] = 'The student assignment submission text extracted from online text, Word documents, or text-based PDF files.';
+$string['privacy:metadata:azure_openai:rubric'] = 'The assignment rubric criteria and grading structure used as feedback-generation context.';
 $string['azureendpoint'] = 'Azure OpenAI endpoint';
 $string['azureendpoint_desc'] = 'Example: https://your-resource.openai.azure.com';
 $string['azureapikey'] = 'Azure OpenAI API key';

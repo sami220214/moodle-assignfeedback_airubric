@@ -9,10 +9,14 @@ Laajennus ei tallenna generoituja palautteita omaan tietokantarakenteeseen.
 
 ## 2. Versio ja yhteensopivuus
 - Komponentti: `assignfeedback_aifeedback`
-- Versio: `2026052202`
-- Release: `0.9.7`
+- Lisäosan tyyppi: `assignfeedback`
+- Tekninen nimi: `aifeedback`
+- Frankenstyle-komponentti: `assignfeedback_aifeedback`
+- Asennuspolku: `mod/assign/feedback/aifeedback/`
+- Versio: `2026062300`
+- Release: `1.0.0`
 - Vaatii vahintaan Moodlen: `4.5` (`2024100700`)
-- Kypsyys: `MATURITY_BETA`
+- Kypsyys: `MATURITY_STABLE`
 
 Lahde: `version.php`.
 
@@ -72,6 +76,8 @@ Lahde: `version.php`.
   - `assignfeedback/aifeedback:generate`
   - oletuksena sallittu rooleille `editingteacher` ja `manager`
 - External API vaatii:
+  - kirjautuneen käyttäjän (`require_login`)
+  - voimassa olevan sesskeyn (`require_sesskey`)
   - `mod/assign:grade`
   - `assignfeedback/aifeedback:generate`
 
@@ -111,12 +117,17 @@ Frontend:
 - Virhetta ei kirjoiteta modaliin tekstialueeseen; status-rivi tyhjennetaan virhetilassa.
 
 ## 9. Tietosuoja
-`classes/privacy/provider.php` toteuttaa `null_provider`-rajapinnan:
-- plugin ei tallenna henkilotietoja omaan tallennukseen.
+`classes/privacy/provider.php` toteuttaa Moodlen Privacy API:n metadata-providerin:
+- plugin ei tallenna henkilotietoja omiin tietokantatauluihinsa.
+- plugin kuvaa ulkoisen sijainnin `azure_openai` Privacy API:n `add_external_location_link` -metadatalla.
+
+Ulkoiseen Azure OpenAI -palveluun lahetetaan palauteluonnoksen luomista varten:
+- opiskelijan palautusteksti, joka poimitaan online-tekstista, Word-dokumenteista tai tekstipohjaisista PDF-tiedostoista
+- tehtavan arviointimatriisin kriteerit ja arviointirakenne
 
 Huomio:
-- opiskelijan palautusteksti ja rubric-sisalto valitetaan ulkoiselle Azure OpenAI -palvelulle.
-- tietosuojavaatimukset, sopimukset ja alueelliset kaytannot on varmistettava organisaatiotasolla.
+- generoitu palaute naytetaan opettajalle, mutta sita ei tallenneta automaattisesti pluginin omaan tietokantaan.
+- Azure OpenAI -paatepiste maaritetaan admin-asetuksissa, joten tietosuojavaatimukset, sopimukset, alueellinen sijainti ja organisaation kaytannot on varmistettava kayttoonotossa.
 
 ## 10. Tunnetut rajoitteet
 1. Tuki koskee rubric-arviointia seka online-tekstipalautusta, Word-tiedostopalautusta (`.docx`/`.doc`) tai tekstipohjaista PDF-palautusta (`.pdf`); skannatut PDF:t ja muut palautustyypit eivat kuulu nykyiseen polkuun.
@@ -135,6 +146,9 @@ Huomio:
 
 ## 12. Tiedostokartta
 - `version.php`
+- `README.md`
+- `README_EN.md`
+- `LICENSE`
 - `settings.php`
 - `locallib.php`
 - `db/access.php`
@@ -149,3 +163,6 @@ Huomio:
 - `amd/build/feedback_button.min.js`
 - `lang/fi/assignfeedback_aifeedback.php`
 - `lang/en/assignfeedback_aifeedback.php`
+
+## 13. Lisenssi ja kolmannen osapuolen kirjastot
+Kaikki pluginin PHP-tiedostot on lisensoitu GNU GPL v3 or later -lisenssillä Moodle-otsikon mukaisesti. Pluginin mukana ei toimiteta erillisiä kolmannen osapuolen kirjastoja; AMD-moduuli käyttää Moodlen tarjoamia `core/ajax`, `core/notification` ja `jquery` -moduuleja sekä käyttöliittymässä Moodlen/teeman Bootstrap-modal API:a. Tämän vuoksi erillistä `thirdpartylibs.xml`-tiedostoa ei tarvita nykyisessä paketissa.
