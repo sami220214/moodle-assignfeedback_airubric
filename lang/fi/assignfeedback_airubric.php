@@ -24,7 +24,7 @@
 $string['pluginname'] = 'Tekoälyn arviointimatriisipalaute';
 $string['generatefeedback'] = 'Palaute';
 $string['systemprompt'] = 'Sinä toimit ammattikorkeakoulun opettajana ja annat opiskelijan palautukseen pelkän rakentavan sanallisen palautteen arviointimatriisin kaikkien kriteerien perusteella kriteereittäin ilman loppu kyselyjä. Älä käytä palautteen luomisessa ulkopuolisia lähteitä. Älä keksi sisältöä, jota opiskelijan tekstissä ei ole. Jos aineistoa puuttuu, kerro mitä puuttuu.';
-$string['modaltitle'] = 'Luo sanallinen palaute arviointimatriisista';
+$string['modaltitle'] = 'Luo sanallinen palaute perustuen arviointimatriisiin';
 $string['copytoclipboard'] = 'Kopioi palaute';
 $string['closebutton'] = 'Sulje';
 $string['suggestedfeedback'] = 'Ehdotettu palaute';

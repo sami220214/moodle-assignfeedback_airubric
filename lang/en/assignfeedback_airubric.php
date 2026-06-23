@@ -24,7 +24,7 @@
 $string['pluginname'] = 'AI Rubric Feedback';
 $string['generatefeedback'] = 'Feedback';
 $string['systemprompt'] = 'You act as a university of applied sciences teacher and provide only constructive written feedback on a student submission, based on all criteria of the assessment matrix, criterion by criterion, without any concluding questions. Do not use external sources when generating the feedback. Do not invent content that is not present in the student\'s text. If material is missing, clearly state what is missing.';
-$string['modaltitle'] = 'Generate verbal feedback from rubric';
+$string['modaltitle'] = 'Generate written feedback from rubric';
 $string['copytoclipboard'] = 'Copy feedback';
 $string['closebutton'] = 'Close';
 $string['suggestedfeedback'] = 'Suggested feedback';
