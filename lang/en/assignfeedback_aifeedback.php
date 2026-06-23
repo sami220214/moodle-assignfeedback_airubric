@@ -21,7 +21,7 @@
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-$string['pluginname'] = 'AI feedback assistant';
+$string['pluginname'] = 'AI Rubric Feedback';
 $string['generatefeedback'] = 'Feedback';
 $string['systemprompt'] = 'You act as a university of applied sciences teacher and provide only constructive written feedback on a student submission, based on all criteria of the assessment matrix, criterion by criterion, without any concluding questions. Do not use external sources when generating the feedback. Do not invent content that is not present in the student\'s text. If material is missing, clearly state what is missing.';
 $string['modaltitle'] = 'Generate verbal feedback from rubric';
@@ -39,8 +39,8 @@ $string['noteligible_nosubmissiontext'] = 'Student submission does not contain o
 $string['azureconfigmissing'] = 'Azure OpenAI settings are incomplete.';
 $string['azurecommunicationerror'] = 'Azure OpenAI request failed: {$a}';
 $string['azureinvalidresponse'] = 'Azure OpenAI returned an invalid response: {$a}';
-$string['privacy:metadata'] = 'The AI feedback assistant plugin does not store personal data in its own database tables.';
-$string['privacy:metadata:azure_openai'] = 'The AI feedback assistant sends assignment submission text and rubric assessment criteria to the configured Azure OpenAI endpoint to generate suggested written feedback.';
+$string['privacy:metadata'] = 'The AI Rubric Feedback plugin does not store personal data in its own database tables.';
+$string['privacy:metadata:azure_openai'] = 'AI Rubric Feedback sends assignment submission text and rubric assessment criteria to the configured Azure OpenAI endpoint to generate suggested written feedback.';
 $string['privacy:metadata:azure_openai:submissiontext'] = 'The student assignment submission text extracted from online text, Word documents, or text-based PDF files.';
 $string['privacy:metadata:azure_openai:rubric'] = 'The assignment rubric criteria and grading structure used as feedback-generation context.';
 $string['azureendpoint'] = 'Azure OpenAI endpoint';
@@ -52,5 +52,5 @@ $string['azuredeployment_desc'] = 'Deployment name, for example gpt-5-mini.';
 $string['azureapiversion'] = 'Azure API version';
 $string['azureapiversion_desc'] = 'Example: 2024-12-01-preview';
 $string['buttondisabledreason'] = 'Feedback button is disabled: {$a}';
-$string['enabled'] = 'AI feedback assistant';
-$string['enabled_help'] = 'If enabled, AI feedback assistant can be used in assignment feedback. Online text, Word document, or text-based PDF submissions and rubric grading method are required for AI feedback to be available.';
+$string['enabled'] = 'AI Rubric Feedback';
+$string['enabled_help'] = 'If enabled, AI Rubric Feedback can be used in assignment feedback. Online text, Word document, or text-based PDF submissions and rubric grading method are required for AI feedback to be available.';

@@ -21,7 +21,7 @@
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-$string['pluginname'] = 'Tekoälypalaute avustaja';
+$string['pluginname'] = 'Tekoälyn arviointimatriisipalaute';
 $string['generatefeedback'] = 'Palaute';
 $string['systemprompt'] = 'Sinä toimit ammattikorkeakoulun opettajana ja annat opiskelijan palautukseen pelkän rakentavan sanallisen palautteen arviointimatriisin kaikkien kriteerien perusteella kriteereittäin ilman loppu kyselyjä. Älä käytä palautteen luomisessa ulkopuolisia lähteitä. Älä keksi sisältöä, jota opiskelijan tekstissä ei ole. Jos aineistoa puuttuu, kerro mitä puuttuu.';
 $string['modaltitle'] = 'Luo sanallinen palaute arviointimatriisista';
@@ -39,8 +39,8 @@ $string['noteligible_nosubmissiontext'] = 'Palautuksessa ei ole online-tekstiä 
 $string['azureconfigmissing'] = 'Azure OpenAI -asetukset puuttuvat.';
 $string['azurecommunicationerror'] = 'Azure OpenAI -kutsu epäonnistui: {$a}';
 $string['azureinvalidresponse'] = 'Azure OpenAI palautti virheellisen vastauksen: {$a}';
-$string['privacy:metadata'] = 'Tekoälypalauteavustaja ei tallenna henkilötietoja omiin tietokantatauluihinsa.';
-$string['privacy:metadata:azure_openai'] = 'Tekoälypalauteavustaja lähettää tehtävän palautustekstin ja arviointimatriisin arviointikriteerit määritettyyn Azure OpenAI -päätepisteeseen ehdotetun sanallisen palautteen luomista varten.';
+$string['privacy:metadata'] = 'Tekoälyn arviointimatriisipalaute ei tallenna henkilötietoja omiin tietokantatauluihinsa.';
+$string['privacy:metadata:azure_openai'] = 'Tekoälyn arviointimatriisipalaute lähettää tehtävän palautustekstin ja arviointimatriisin arviointikriteerit määritettyyn Azure OpenAI -päätepisteeseen ehdotetun sanallisen palautteen luomista varten.';
 $string['privacy:metadata:azure_openai:submissiontext'] = 'Opiskelijan tehtäväpalautuksen teksti, joka on poimittu online-tekstistä, Word-dokumenteista tai tekstipohjaisista PDF-tiedostoista.';
 $string['privacy:metadata:azure_openai:rubric'] = 'Tehtävän arviointimatriisin kriteerit ja arviointirakenne, joita käytetään palautteen luonnin kontekstina.';
 $string['azureendpoint'] = 'Azure OpenAI -päätepiste';
@@ -52,5 +52,5 @@ $string['azuredeployment_desc'] = 'Käyttöönotto, esimerkiksi gpt-5-mini.';
 $string['azureapiversion'] = 'Azure API-versio';
 $string['azureapiversion_desc'] = 'Esimerkiksi 2024-12-01-preview';
 $string['buttondisabledreason'] = 'Palautepainike ei ole aktiivinen: {$a}';
-$string['enabled'] = 'Tekoälypalaute avustaja';
-$string['enabled_help'] = 'Jos tämä on käytössä, tekoälypalauteavustajaa voidaan käyttää tehtävän palautteenannossa. Online-teksti-, Word-dokumentti- tai tekstipohjainen PDF-palautus ja arviointimatriisi vaaditaan, jotta tekoälyapuria voidaan käyttää.';
+$string['enabled'] = 'Tekoälyn arviointimatriisipalaute';
+$string['enabled_help'] = 'Jos tämä on käytössä, tekoälyn arviointimatriisipalautetta voidaan käyttää tehtävän palautteenannossa. Online-teksti-, Word-dokumentti- tai tekstipohjainen PDF-palautus ja arviointimatriisi vaaditaan, jotta tekoälyapuria voidaan käyttää.';
