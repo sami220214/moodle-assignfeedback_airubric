@@ -5,7 +5,7 @@
 - based on the assessment rubric
 - based on the student's online text submission, Word document (`.docx`/`.doc`), or text-based PDF document (`.pdf`)
 
-The plugin does not store generated feedback in its own database structure.
+The plugin shows the suggested feedback and the estimated number of input tokens sent to AI. Generated feedback is not automatically stored in the plugin's own database.
 
 ## 2. Version and compatibility
 - Component: `assignfeedback_airubric`
@@ -13,8 +13,8 @@ The plugin does not store generated feedback in its own database structure.
 - Technical name: `airubric`
 - Frankenstyle component: `assignfeedback_airubric`
 - Installation path: `mod/assign/feedback/airubric/`
-- Version: `2026062300`
-- Release: `1.0.0`
+- Version: `2026080400`
+- Release: `1.0.1`
 - Requires at least Moodle: `4.5` (`2024100700`)
 - Maturity: `MATURITY_STABLE`
 
@@ -29,8 +29,10 @@ Source: `version.php`.
    - the submission contains online text, a readable Word document, or a text-based PDF
 4. The teacher clicks the feedback button.
 5. The AMD module calls the AJAX endpoint `assignfeedback_airubric_generate_feedback`.
-6. The External API retrieves the rubric content, the student's online text and/or Word/PDF document text content, and calls Azure OpenAI.
-7. The generated text is shown in the modal textarea and can be copied to the clipboard.
+6. The External API retrieves the rubric content, the student's online text and/or Word/PDF document text content.
+7. The service estimates the number of input tokens and blocks the request if the estimate exceeds `100000` tokens.
+8. Azure OpenAI produces the feedback draft.
+9. The generated text and token estimate are shown in the modal, and the feedback can be copied to the clipboard.
 
 ## 4. Architecture
 
@@ -53,8 +55,11 @@ Source: `version.php`.
   - renders the rubric through the grading controller, with fallbacks for different Moodle signatures
   - retrieves the student's submission text from online text and/or Word/PDF files
   - calls the Azure service
+  - returns the generated text and estimated input token count
 - `classes/service/azure_feedback_service.php`
   - builds the HTTP request to the Azure OpenAI Chat Completions API
+  - estimates the input token count before the request
+  - blocks oversized requests with a `100000` token limit
   - handles cURL and response-format errors
 
 ### 4.2 UI (Mustache + AMD)
@@ -62,9 +67,10 @@ Source: `version.php`.
   - button, modal, status area, textarea, and copy button
   - shows a disabled button and reason when feedback generation is not eligible
 - `amd/src/feedback_button.js` (+ `amd/build/feedback_button.min.js`)
-  - opens the modal (Bootstrap 5 API, jQuery modal fallback, final DOM fallback)
+  - opens the modal through the Bootstrap 5 API, jQuery modal fallback, or final DOM fallback
   - makes the AJAX call
   - shows generation status
+  - shows the generated feedback and estimated input token count
   - shows errors through `core/notification` exceptions
   - copies text to the clipboard (`navigator.clipboard`, fallback `execCommand`)
 
@@ -89,16 +95,21 @@ Plugin admin settings (`settings.php`):
 - `assignfeedback_airubric/azureapiversion` (default `2024-12-01-preview`)
 
 ## 7. Azure integration
-`azure_feedback_service::generate($rubric, $submission)`:
+`azure_feedback_service::generate_with_usage($rubric, $submission)`:
 - builds the URL:
   - `{endpoint}/openai/deployments/{deployment}/chat/completions?api-version={apiversion}`
 - sends the payload:
   - `messages`: `system` + `user`
   - `max_completion_tokens`: `7096`
+- estimates the token count of the `messages` content with a deterministic word-based estimate
+- stops the request before calling Azure if the estimated input exceeds `100000` tokens
 - sets the headers:
   - `Content-Type: application/json`
   - `api-key: <azureapikey>`
 - timeout: `45` s
+- returns:
+  - `feedback`: generated feedback
+  - `inputtokens`: estimated input token count
 
 The sent content is formed in the external class:
 - rubric: `strip_tags($rubric)`
@@ -107,6 +118,7 @@ The sent content is formed in the external class:
 ## 8. Error handling
 Backend:
 - missing configuration -> `azureconfigmissing`
+- oversized estimated input -> `inputtokenlimitexceeded`
 - cURL error -> `azurecommunicationerror`
 - Azure JSON error (`error.message`) -> `azurecommunicationerror`
 - incomplete response format -> `azureinvalidresponse`
@@ -118,31 +130,33 @@ Frontend:
 
 ## 9. Privacy
 `classes/privacy/provider.php` implements Moodle's Privacy API metadata provider:
-- the plugin does not store personal data in its own database tables.
-- the plugin describes the external location `azure_openai` with the Privacy API `add_external_location_link` metadata.
+- the plugin does not store personal data in its own database tables
+- the plugin describes the external location `azure_openai` with the Privacy API `add_external_location_link` metadata
 
 The following data is sent to the external Azure OpenAI service to generate the feedback draft:
 - the student's submission text, extracted from online text, Word documents, or text-based PDF files
 - the assignment rubric criteria and grading structure
 
 Notes:
-- generated feedback is shown to the teacher, but it is not automatically stored in the plugin's own database.
-- the Azure OpenAI endpoint is configured in admin settings, so privacy requirements, contracts, regional location, and organizational policies must be verified during deployment.
+- generated feedback is shown to the teacher, but it is not automatically stored in the plugin's own database
+- the Azure OpenAI endpoint is configured in admin settings, so privacy requirements, contracts, regional location, and organizational policies must be verified during deployment
 
 ## 10. Known limitations
 1. Support covers rubric grading and online text submissions, Word document submissions (`.docx`/`.doc`), or text-based PDF submissions (`.pdf`); scanned PDFs and other submission types are not included in the current path.
 2. Generated feedback is not automatically stored as assessment feedback; the teacher copies it manually.
 3. The prompt is not a separate admin setting, but a language string (`systemprompt`).
-4. The plugin directory does not include an actual automated test suite (unit/integration).
+4. Token count is an estimate because exact tokenization depends on the deployed Azure OpenAI model.
+5. The plugin directory does not include an actual automated test suite (unit/integration). The repository does include a GitHub Actions CI workflow for Moodle Plugin CI checks.
 
 ## 11. Deployment checklist
-1. Install the plugin in Moodle.
-2. Configure the Azure settings (`endpoint`, `apikey`, `deployment`, `api version`).
-3. Ensure the `assignfeedback/airubric:generate` capability is granted to the required roles.
-4. Ensure the assignment activity uses rubric grading.
-5. Ensure the student has an online text submission, Word document submission, or text-based PDF submission.
-6. Test generation from the teacher view.
-7. Check Moodle logs in error cases.
+1. Install the plugin in Moodle at `mod/assign/feedback/airubric/`.
+2. Run the Moodle upgrade so version `2026080400` is registered.
+3. Configure the Azure settings (`endpoint`, `apikey`, `deployment`, `api version`).
+4. Ensure the `assignfeedback/airubric:generate` capability is granted to the required roles.
+5. Ensure the assignment activity uses rubric grading.
+6. Ensure the student has an online text submission, Word document submission, or text-based PDF submission.
+7. Test generation from the teacher grading view.
+8. Check Moodle logs in error cases.
 
 ## 12. File map
 - `version.php`
@@ -163,6 +177,17 @@ Notes:
 - `amd/build/feedback_button.min.js`
 - `lang/fi/assignfeedback_airubric.php`
 - `lang/en/assignfeedback_airubric.php`
+- `.github/workflows/ci.yml`
 
-## 13. License and third-party libraries
+## 13. CI
+`.github/workflows/ci.yml` runs Moodle Plugin CI checks in GitHub Actions on push and pull request events.
+
+Matrix:
+- PHP: `8.1`, `8.2`, `8.3`
+- Moodle: `MOODLE_405_STABLE`
+- Databases: `pgsql`, `mariadb`
+
+Checks include PHP lint, PHP Mess Detector, Moodle Code Checker, PHPDoc Checker, validate, savepoints, Mustache lint, Grunt, PHPUnit, and Behat.
+
+## 14. License and third-party libraries
 All PHP files in the plugin are licensed under GNU GPL v3 or later through the Moodle file header. The plugin does not bundle separate third-party libraries; the AMD module uses Moodle-provided `core/ajax`, `core/notification`, and `jquery` modules, and the UI uses the Moodle/theme Bootstrap modal API. Therefore a separate `thirdpartylibs.xml` file is not required for the current package.
