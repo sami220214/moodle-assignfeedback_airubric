@@ -26,7 +26,6 @@ namespace assignfeedback_airubric\privacy;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\metadata\provider as metadata_provider;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Privacy provider for assignfeedback_airubric.

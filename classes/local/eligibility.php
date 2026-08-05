@@ -27,7 +27,6 @@ use assign;
 use assignfeedback_airubric\local\submission_text;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Calculates whether AI feedback can be generated.

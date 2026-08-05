@@ -27,7 +27,6 @@ use assign;
 use stored_file;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Reads supported assignment submission text sources for AI feedback.
@@ -152,18 +151,20 @@ class submission_text {
             $opened = true;
 
             $parts = [];
-            foreach ([
-                'word/document.xml',
-                'word/header1.xml',
-                'word/header2.xml',
-                'word/header3.xml',
-                'word/footer1.xml',
-                'word/footer2.xml',
-                'word/footer3.xml',
-                'word/footnotes.xml',
-                'word/endnotes.xml',
-                'word/comments.xml',
-            ] as $entry) {
+            foreach (
+                [
+                    'word/document.xml',
+                    'word/header1.xml',
+                    'word/header2.xml',
+                    'word/header3.xml',
+                    'word/footer1.xml',
+                    'word/footer2.xml',
+                    'word/footer3.xml',
+                    'word/footnotes.xml',
+                    'word/endnotes.xml',
+                    'word/comments.xml',
+                ] as $entry
+            ) {
                 $xml = $zip->getFromName($entry);
                 if ($xml !== false) {
                     $parts[] = $this->extract_ooxml_text($xml);
@@ -256,11 +257,13 @@ class submission_text {
             return $stream;
         }
 
-        foreach ([
-            @gzuncompress($stream),
-            @gzdecode($stream),
-            @gzinflate($stream),
-        ] as $decoded) {
+        foreach (
+            [
+                @gzuncompress($stream),
+                @gzdecode($stream),
+                @gzinflate($stream),
+            ] as $decoded
+        ) {
             if (is_string($decoded) && $decoded !== '') {
                 return $decoded;
             }
@@ -389,7 +392,14 @@ class submission_text {
 
             if (preg_match_all('/beginbfchar(.*?)endbfchar/s', $stream, $sections)) {
                 foreach ($sections[1] as $section) {
-                    if (preg_match_all('/<([\da-fA-F]+)>\s*<([\da-fA-F]+)>/', $section, $chars, PREG_SET_ORDER)) {
+                    if (
+                        preg_match_all(
+                            '/<([\da-fA-F]+)>\s*<([\da-fA-F]+)>/',
+                            $section,
+                            $chars,
+                            PREG_SET_ORDER
+                        )
+                    ) {
                         foreach ($chars as $char) {
                             $map[strtoupper($char[1])] = $this->decode_pdf_unicode_hex($char[2]);
                         }
@@ -399,19 +409,25 @@ class submission_text {
 
             if (preg_match_all('/beginbfrange(.*?)endbfrange/s', $stream, $sections)) {
                 foreach ($sections[1] as $section) {
-                    if (preg_match_all(
-                        '/<([\da-fA-F]+)>\s*<([\da-fA-F]+)>\s*<([\da-fA-F]+)>/',
-                        $section,
-                        $ranges,
-                        PREG_SET_ORDER
-                    )) {
+                    if (
+                        preg_match_all(
+                            '/<([\da-fA-F]+)>\s*<([\da-fA-F]+)>\s*<([\da-fA-F]+)>/',
+                            $section,
+                            $ranges,
+                            PREG_SET_ORDER
+                        )
+                    ) {
                         foreach ($ranges as $range) {
                             $start = hexdec($range[1]);
                             $end = hexdec($range[2]);
                             $target = hexdec($range[3]);
                             $width = strlen($range[1]);
 
-                            for ($code = $start; $code <= $end && $code - $start < 256; $code++) {
+                            for (
+                                $code = $start;
+                                $code <= $end && $code - $start < 256;
+                                $code++
+                            ) {
                                 $key = strtoupper(str_pad(dechex($code), $width, '0', STR_PAD_LEFT));
                                 $map[$key] = $this->decode_pdf_unicode_hex(dechex($target + ($code - $start)));
                             }

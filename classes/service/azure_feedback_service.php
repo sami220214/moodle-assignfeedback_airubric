@@ -23,7 +23,6 @@
  */
 namespace assignfeedback_airubric\service;
 
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Builds and sends AI feedback requests to Azure OpenAI endpoint.
