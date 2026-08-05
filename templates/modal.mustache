@@ -1,3 +1,22 @@
+{{!
+    @template assignfeedback_airubric/modal
+
+    Displays the AI rubric feedback button and modal.
+
+    Example context (json):
+    {
+        "cmid": 12,
+        "userid": 34,
+        "eligible": true,
+        "buttonlabel": "Feedback",
+        "modaltitle": "Generate written feedback from rubric",
+        "resultlabel": "Suggested feedback",
+        "copylabel": "Copy feedback",
+        "generatinglabel": "Generating feedback...",
+        "tokencountlabel": "Estimated input tokens sent to AI: {$a}",
+        "reason": "Rubric grading method is not enabled for this assignment."
+    }
+}}
 <div class="assignfeedback-airubric" data-region="assignfeedback-airubric" data-cmid="{{cmid}}" data-userid="{{userid}}" data-generating-label="{{generatinglabel}}" data-token-count-label="{{tokencountlabel}}">
     {{#eligible}}
     <button type="button" class="btn btn-outline-primary" data-action="open-modal">{{buttonlabel}}</button>

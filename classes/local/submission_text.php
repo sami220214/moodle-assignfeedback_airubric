@@ -37,7 +37,9 @@ class submission_text {
     private $assignment;
 
     /**
-     * @param assign $assignment
+     * Creates a submission text reader for the assignment.
+     *
+     * @param assign $assignment Assignment instance.
      */
     public function __construct(assign $assignment) {
         $this->assignment = $assignment;
@@ -68,8 +70,10 @@ class submission_text {
     }
 
     /**
-     * @param int $submissionid
-     * @return string
+     * Returns online text for the submission.
+     *
+     * @param int $submissionid Submission ID.
+     * @return string Online text content.
      */
     public function get_online_text_submission(int $submissionid): string {
         global $DB;
@@ -79,8 +83,10 @@ class submission_text {
     }
 
     /**
-     * @param int $submissionid
-     * @return stored_file[]
+     * Returns supported submitted files.
+     *
+     * @param int $submissionid Submission ID.
+     * @return stored_file[] Supported submitted files.
      */
     private function get_supported_files(int $submissionid): array {
         $fs = get_file_storage();
@@ -94,15 +100,17 @@ class submission_text {
             false
         );
 
-        return array_filter($files, function(stored_file $file): bool {
+        return array_filter($files, function (stored_file $file): bool {
             $extension = strtolower(pathinfo($file->get_filename(), PATHINFO_EXTENSION));
             return in_array($extension, ['docx', 'doc', 'pdf'], true);
         });
     }
 
     /**
-     * @param stored_file $file
-     * @return string
+     * Extracts readable text from a supported file.
+     *
+     * @param stored_file $file Submitted file.
+     * @return string Extracted text.
      */
     private function extract_file_text(stored_file $file): string {
         $extension = strtolower(pathinfo($file->get_filename(), PATHINFO_EXTENSION));
@@ -123,8 +131,10 @@ class submission_text {
     }
 
     /**
-     * @param stored_file $file
-     * @return string
+     * Extracts readable text from a DOCX file.
+     *
+     * @param stored_file $file DOCX file.
+     * @return string Extracted text.
      */
     private function extract_docx_text(stored_file $file): string {
         if (!class_exists('\ZipArchive')) {
@@ -222,19 +232,21 @@ class submission_text {
             }
         }
 
-        $unicodeMap = $this->extract_pdf_unicode_map($streams);
+        $unicodemap = $this->extract_pdf_unicode_map($streams);
         $parts = [];
         foreach ($streams as $stream) {
-            $parts[] = $this->extract_pdf_stream_text($stream, $unicodeMap);
+            $parts[] = $this->extract_pdf_stream_text($stream, $unicodemap);
         }
 
         return $this->normalise_text(implode("\n", array_filter($parts)));
     }
 
     /**
-     * @param string $dictionary
-     * @param string $stream
-     * @return string
+     * Decodes a compressed PDF stream when supported.
+     *
+     * @param string $dictionary PDF stream dictionary.
+     * @param string $stream PDF stream content.
+     * @return string Decoded stream content.
      */
     private function decode_pdf_stream(string $dictionary, string $stream): string {
         $stream = preg_replace('/^\r?\n/', '', $stream);
@@ -258,10 +270,13 @@ class submission_text {
     }
 
     /**
-     * @param string $stream
-     * @return string
+     * Extracts text tokens from a decoded PDF stream.
+     *
+     * @param string $stream Decoded PDF stream.
+     * @param array $unicodemap Unicode character map.
+     * @return string Extracted stream text.
      */
-    private function extract_pdf_stream_text(string $stream, array $unicodeMap = []): string {
+    private function extract_pdf_stream_text(string $stream, array $unicodemap = []): string {
         $parts = [];
 
         if (!preg_match_all('/BT(.*?)ET/s', $stream, $blocks)) {
@@ -271,13 +286,13 @@ class submission_text {
         foreach ($blocks[1] as $block) {
             if (preg_match_all('/\[(.*?)\]\s*TJ/s', $block, $arrays)) {
                 foreach ($arrays[1] as $array) {
-                    $parts[] = $this->extract_pdf_strings($array, $unicodeMap);
+                    $parts[] = $this->extract_pdf_strings($array, $unicodemap);
                 }
             }
 
             if (preg_match_all('/((?:\((?:\\\\.|[^\\\\()])*\)|<[\da-fA-F\s]+>))\s*(?:Tj|\'|")/s', $block, $strings)) {
                 foreach ($strings[1] as $string) {
-                    $parts[] = $this->decode_pdf_text_token($string, $unicodeMap);
+                    $parts[] = $this->decode_pdf_text_token($string, $unicodemap);
                 }
             }
         }
@@ -286,15 +301,18 @@ class submission_text {
     }
 
     /**
-     * @param string $value
-     * @return string
+     * Extracts PDF string tokens from a value.
+     *
+     * @param string $value PDF text operator value.
+     * @param array $unicodemap Unicode character map.
+     * @return string Extracted string text.
      */
-    private function extract_pdf_strings(string $value, array $unicodeMap = []): string {
+    private function extract_pdf_strings(string $value, array $unicodemap = []): string {
         $parts = [];
 
         if (preg_match_all('/\((?:\\\\.|[^\\\\()])*\)|<[\da-fA-F\s]+>/s', $value, $strings)) {
             foreach ($strings[0] as $string) {
-                $parts[] = $this->decode_pdf_text_token($string, $unicodeMap);
+                $parts[] = $this->decode_pdf_text_token($string, $unicodemap);
             }
         }
 
@@ -302,26 +320,32 @@ class submission_text {
     }
 
     /**
-     * @param string $token
-     * @return string
+     * Decodes a PDF literal or hexadecimal text token.
+     *
+     * @param string $token PDF text token.
+     * @param array $unicodemap Unicode character map.
+     * @return string Decoded text.
      */
-    private function decode_pdf_text_token(string $token, array $unicodeMap = []): string {
+    private function decode_pdf_text_token(string $token, array $unicodemap = []): string {
         if ($token === '') {
             return '';
         }
 
         if ($token[0] === '<') {
-            return $this->decode_pdf_hex_string($token, $unicodeMap);
+            return $this->decode_pdf_hex_string($token, $unicodemap);
         }
 
         return $this->decode_pdf_literal_string($token);
     }
 
     /**
-     * @param string $token
-     * @return string
+     * Decodes a hexadecimal PDF text token.
+     *
+     * @param string $token Hexadecimal PDF text token.
+     * @param array $unicodemap Unicode character map.
+     * @return string Decoded text.
      */
-    private function decode_pdf_hex_string(string $token, array $unicodeMap = []): string {
+    private function decode_pdf_hex_string(string $token, array $unicodemap = []): string {
         $hex = preg_replace('/[<>\s]/', '', $token);
         if ($hex === '') {
             return '';
@@ -339,8 +363,8 @@ class submission_text {
             return mb_convert_encoding(substr($bytes, 2), 'UTF-8', 'UTF-16BE');
         }
 
-        if ($unicodeMap) {
-            $mapped = $this->map_pdf_hex_text($hex, $unicodeMap);
+        if ($unicodemap) {
+            $mapped = $this->map_pdf_hex_text($hex, $unicodemap);
             if ($mapped !== '') {
                 return $mapped;
             }
@@ -350,8 +374,10 @@ class submission_text {
     }
 
     /**
-     * @param string[] $streams
-     * @return array<string, string>
+     * Extracts a PDF ToUnicode character map from streams.
+     *
+     * @param string[] $streams Decoded PDF streams.
+     * @return array<string, string> Unicode character map.
      */
     private function extract_pdf_unicode_map(array $streams): array {
         $map = [];
@@ -373,7 +399,12 @@ class submission_text {
 
             if (preg_match_all('/beginbfrange(.*?)endbfrange/s', $stream, $sections)) {
                 foreach ($sections[1] as $section) {
-                    if (preg_match_all('/<([\da-fA-F]+)>\s*<([\da-fA-F]+)>\s*<([\da-fA-F]+)>/', $section, $ranges, PREG_SET_ORDER)) {
+                    if (preg_match_all(
+                        '/<([\da-fA-F]+)>\s*<([\da-fA-F]+)>\s*<([\da-fA-F]+)>/',
+                        $section,
+                        $ranges,
+                        PREG_SET_ORDER
+                    )) {
                         foreach ($ranges as $range) {
                             $start = hexdec($range[1]);
                             $end = hexdec($range[2]);
@@ -394,23 +425,25 @@ class submission_text {
     }
 
     /**
-     * @param string $hex
-     * @param array<string, string> $unicodeMap
-     * @return string
+     * Maps hexadecimal PDF text through a Unicode character map.
+     *
+     * @param string $hex Hexadecimal PDF text.
+     * @param array $unicodemap Unicode character map.
+     * @return string Mapped text.
      */
-    private function map_pdf_hex_text(string $hex, array $unicodeMap): string {
+    private function map_pdf_hex_text(string $hex, array $unicodemap): string {
         $text = '';
         $position = 0;
         $length = strlen($hex);
-        $widths = array_unique(array_map('strlen', array_keys($unicodeMap)));
+        $widths = array_unique(array_map('strlen', array_keys($unicodemap)));
         rsort($widths);
 
         while ($position < $length) {
             $matched = false;
             foreach ($widths as $width) {
                 $key = strtoupper(substr($hex, $position, $width));
-                if (isset($unicodeMap[$key])) {
-                    $text .= $unicodeMap[$key];
+                if (isset($unicodemap[$key])) {
+                    $text .= $unicodemap[$key];
                     $position += $width;
                     $matched = true;
                     break;
@@ -426,8 +459,10 @@ class submission_text {
     }
 
     /**
-     * @param string $hex
-     * @return string
+     * Decodes UTF-16BE hexadecimal PDF Unicode text.
+     *
+     * @param string $hex Hexadecimal Unicode text.
+     * @return string Decoded text.
      */
     private function decode_pdf_unicode_hex(string $hex): string {
         if (strlen($hex) % 2 === 1) {
@@ -443,13 +478,15 @@ class submission_text {
     }
 
     /**
-     * @param string $token
-     * @return string
+     * Decodes a literal PDF text token.
+     *
+     * @param string $token Literal PDF text token.
+     * @return string Decoded text.
      */
     private function decode_pdf_literal_string(string $token): string {
         $value = substr($token, 1, -1);
 
-        return preg_replace_callback('/\\\\(?:([nrtbf()\\\\])|([0-7]{1,3})|\r?\n|\r)/', function(array $matches): string {
+        return preg_replace_callback('/\\\\(?:([nrtbf()\\\\])|([0-7]{1,3})|\r?\n|\r)/', function (array $matches): string {
             if (!empty($matches[2])) {
                 return chr(octdec($matches[2]));
             }
@@ -476,8 +513,10 @@ class submission_text {
     }
 
     /**
-     * @param string $xml
-     * @return string
+     * Extracts plain text from Office Open XML markup.
+     *
+     * @param string $xml Office Open XML markup.
+     * @return string Extracted text.
      */
     private function extract_ooxml_text(string $xml): string {
         $xml = preg_replace('/<w:tab\s*\/>/i', "\t", $xml);
@@ -489,8 +528,10 @@ class submission_text {
     }
 
     /**
-     * @param string $text
-     * @return string
+     * Normalises extracted submission text.
+     *
+     * @param string $text Text to normalise.
+     * @return string Normalised text.
      */
     private function normalise_text(string $text): string {
         $text = $this->ensure_utf8($text);
@@ -509,8 +550,10 @@ class submission_text {
     }
 
     /**
-     * @param string $text
-     * @return string
+     * Ensures extracted text is valid UTF-8.
+     *
+     * @param string $text Text to clean.
+     * @return string UTF-8 text.
      */
     private function ensure_utf8(string $text): string {
         if ($text === '' || preg_match('//u', $text)) {

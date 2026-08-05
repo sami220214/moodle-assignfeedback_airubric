@@ -37,7 +37,9 @@ class eligibility {
     private $assignment;
 
     /**
-     * @param assign $assignment
+     * Creates an eligibility checker for the assignment.
+     *
+     * @param assign $assignment Assignment instance.
      */
     public function __construct(assign $assignment) {
         $this->assignment = $assignment;
@@ -78,8 +80,10 @@ class eligibility {
     }
 
     /**
-     * @param int $submissionid
-     * @return string
+     * Returns the online text submission content.
+     *
+     * @param int $submissionid Submission ID.
+     * @return string Online text submission content.
      */
     public function get_online_text_submission(int $submissionid): string {
         $reader = new submission_text($this->assignment);
@@ -87,7 +91,9 @@ class eligibility {
     }
 
     /**
-     * @return bool
+     * Checks whether the assignment uses rubric grading.
+     *
+     * @return bool True when rubric grading is active.
      */
     private function has_rubric(): bool {
         $gradingmanager = get_grading_manager($this->assignment->get_context(), 'mod_assign', 'submissions');

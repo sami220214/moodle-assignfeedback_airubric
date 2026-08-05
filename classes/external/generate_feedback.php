@@ -40,7 +40,9 @@ defined('MOODLE_INTERNAL') || die();
  */
 class generate_feedback extends external_api {
     /**
-     * @return external_function_parameters
+     * Returns the external function parameters.
+     *
+     * @return external_function_parameters External function parameters.
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
@@ -50,9 +52,11 @@ class generate_feedback extends external_api {
     }
 
     /**
-     * @param int $cmid
-     * @param int $userid
-     * @return array
+     * Generates AI feedback for the selected student submission.
+     *
+     * @param int $cmid Course module ID.
+     * @param int $userid Student user ID.
+     * @return array Generated feedback response.
      */
     public static function execute(int $cmid, int $userid): array {
         global $DB, $CFG;
@@ -85,7 +89,7 @@ class generate_feedback extends external_api {
         $rubric = '';
 
         if ($controller) {
-            $renderwithpage = function() use ($CFG, $context, $course, $cm, $controller, $params): string {
+            $renderwithpage = function () use ($CFG, $context, $course, $cm, $controller, $params): string {
                 require_once($CFG->libdir . '/pagelib.php');
 
                 $page = new \moodle_page();
@@ -132,7 +136,9 @@ class generate_feedback extends external_api {
     }
 
     /**
-     * @return external_single_structure
+     * Returns the external function response structure.
+     *
+     * @return external_single_structure External function response structure.
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([

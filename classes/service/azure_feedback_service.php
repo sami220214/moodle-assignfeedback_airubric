@@ -33,9 +33,11 @@ class azure_feedback_service {
     private const MAX_INPUT_TOKENS = 100000;
 
     /**
-     * @param string $rubric
-     * @param string $submission
-     * @return string
+     * Generates feedback text for a rubric and submission.
+     *
+     * @param string $rubric Rubric text.
+     * @param string $submission Submission text.
+     * @return string Generated feedback text.
      */
     public function generate(string $rubric, string $submission): string {
         $result = $this->generate_with_usage($rubric, $submission);
@@ -44,9 +46,11 @@ class azure_feedback_service {
     }
 
     /**
-     * @param string $rubric
-     * @param string $submission
-     * @return array{feedback: string, inputtokens: int}
+     * Generates feedback text and returns token usage metadata.
+     *
+     * @param string $rubric Rubric text.
+     * @param string $submission Submission text.
+     * @return array{feedback: string, inputtokens: int} Generated feedback and input token count.
      */
     public function generate_with_usage(string $rubric, string $submission): array {
         global $CFG;
@@ -61,7 +65,8 @@ class azure_feedback_service {
             throw new \moodle_exception('azureconfigmissing', 'assignfeedback_airubric');
         }
 
-        $url = rtrim($endpoint, '/') . '/openai/deployments/' . rawurlencode($deployment) . '/chat/completions?api-version=' . urlencode($apiversion);
+        $url = rtrim($endpoint, '/') . '/openai/deployments/' . rawurlencode($deployment)
+            . '/chat/completions?api-version=' . urlencode($apiversion);
         $systemprompt = trim(get_string('systemprompt', 'assignfeedback_airubric'));
 
         $payload = [
