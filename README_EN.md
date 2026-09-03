@@ -13,8 +13,8 @@ The plugin shows the suggested feedback and the estimated number of input tokens
 - Technical name: `airubric`
 - Frankenstyle component: `assignfeedback_airubric`
 - Installation path: `mod/assign/feedback/airubric/`
-- Version: `2026080400`
-- Release: `1.0.1`
+- Version: `2026080700`
+- Release: `1.0.3`
 - Requires at least Moodle: `4.5` (`2024100700`)
 - Maturity: `MATURITY_STABLE`
 
@@ -150,7 +150,7 @@ Notes:
 
 ## 11. Deployment checklist
 1. Install the plugin in Moodle at `mod/assign/feedback/airubric/`.
-2. Run the Moodle upgrade so version `2026080400` is registered.
+2. Run the Moodle upgrade so version `2026080500` is registered.
 3. Configure the Azure settings (`endpoint`, `apikey`, `deployment`, `api version`).
 4. Ensure the `assignfeedback/airubric:generate` capability is granted to the required roles.
 5. Ensure the assignment activity uses rubric grading.

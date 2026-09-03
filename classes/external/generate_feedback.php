@@ -26,6 +26,7 @@ namespace assignfeedback_airubric\external;
 use assign;
 use assignfeedback_airubric\local\eligibility;
 use assignfeedback_airubric\local\submission_text;
+use assignfeedback_airubric\local\rubric_renderer;
 use assignfeedback_airubric\service\azure_feedback_service;
 use core\context\module as context_module;
 use core_external\external_api;
@@ -84,43 +85,8 @@ class generate_feedback extends external_api {
             throw new \moodle_exception('noteligible', 'assignfeedback_airubric', '', $state->reason);
         }
 
-        $controller = get_grading_manager($context, 'mod_assign', 'submissions')->get_active_controller();
-        $rubric = '';
-
-        if ($controller) {
-            $renderwithpage = function () use ($CFG, $context, $course, $cm, $controller, $params): string {
-                require_once($CFG->libdir . '/pagelib.php');
-
-                $page = new \moodle_page();
-                $page->set_context($context);
-                $page->set_course($course);
-                $page->set_cm($cm);
-                $page->set_url(new \moodle_url('/mod/assign/view.php', ['id' => $cm->id]));
-
-                return (string)$controller->render_grade(
-                    $page,
-                    (int)$params['userid'],
-                    [],
-                    '',
-                    false
-                );
-            };
-
-            try {
-                $method = new \ReflectionMethod($controller, 'render_grade');
-                $firstparam = $method->getParameters()[0] ?? null;
-
-                if ($firstparam && $firstparam->getName() === 'grade') {
-                    $grade = $assign->get_user_grade((int)$params['userid'], true);
-                    $rubric = (string)$controller->render_grade($grade, false, true, false, false);
-                } else {
-                    $rubric = $renderwithpage();
-                }
-            } catch (\Throwable $e) {
-                // Fallback for Moodle variants with different rubric controller signatures.
-                $rubric = $renderwithpage();
-            }
-        }
+        $renderer = new rubric_renderer($assign, $context, $course, $cm);
+        $rubric = $renderer->render_for_user((int)$params['userid']);
         $submission = $assign->get_user_submission($params['userid'], false);
         $reader = new submission_text($assign);
         $submissiontext = $submission ? $reader->get_text($submission) : '';

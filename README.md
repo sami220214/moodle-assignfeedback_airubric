@@ -13,8 +13,8 @@ Laajennus näyttää opettajalle ehdotetun palautteen ja arvioidun tekoälylle l
 - Tekninen nimi: `airubric`
 - Frankenstyle-komponentti: `assignfeedback_airubric`
 - Asennuspolku: `mod/assign/feedback/airubric/`
-- Versio: `2026080400`
-- Release: `1.0.1`
+- Versio: `2026080700`
+- Release: `1.0.3`
 - Vaatii vähintään Moodlen: `4.5` (`2024100700`)
 - Kypsyys: `MATURITY_STABLE`
 
@@ -150,7 +150,7 @@ Huomio:
 
 ## 11. Käyttöönoton tarkistuslista
 1. Asenna plugin Moodleen polkuun `mod/assign/feedback/airubric/`.
-2. Aja Moodlen päivitys, jotta versio `2026080400` rekisteröityy.
+2. Aja Moodlen päivitys, jotta versio `2026080500` rekisteröityy.
 3. Aseta Azure-asetukset (`endpoint`, `apikey`, `deployment`, `api version`).
 4. Varmista capability `assignfeedback/airubric:generate` tarvittaville rooleille.
 5. Varmista, että tehtäväaktiviteetissa käytetään rubric-arviointia.

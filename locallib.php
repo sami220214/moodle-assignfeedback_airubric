@@ -55,13 +55,12 @@ class assign_feedback_airubric extends assign_feedback_plugin {
      * @param stdClass|null $submissionorgrade
      * @param MoodleQuickForm $mform
      * @param stdClass $data
-     * @return bool
      */
     public function get_form_elements($submissionorgrade, MoodleQuickForm $mform, stdClass $data) {
         global $PAGE, $OUTPUT;
 
         if (!has_capability('assignfeedback/airubric:generate', $this->assignment->get_context())) {
-            return true;
+            return $this->has_form_elements_result();
         }
 
         $userid = 0;
@@ -93,6 +92,15 @@ class assign_feedback_airubric extends assign_feedback_plugin {
         $mform->addElement('static', 'assignfeedback_airubric_control', get_string('pluginname', 'assignfeedback_airubric'), $html);
 
         $PAGE->requires->js_call_amd('assignfeedback_airubric/feedback_button', 'init');
+        return $this->has_form_elements_result();
+    }
+
+    /**
+     * Return successful form element handling result.
+     *
+     * @return mixed
+     */
+    private function has_form_elements_result() {
         return true;
     }
 
@@ -104,6 +112,8 @@ class assign_feedback_airubric extends assign_feedback_plugin {
      * @return bool
      */
     public function save(stdClass $grade, stdClass $data) {
+        unset($grade, $data);
+
         return true;
     }
 }
