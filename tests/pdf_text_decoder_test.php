@@ -32,7 +32,9 @@ use assignfeedback_airubric\local\pdf_text_decoder;
  * @covers \assignfeedback_airubric\local\pdf_text_decoder
  */
 final class pdf_text_decoder_test extends \basic_testcase {
-    /** Tests plain text, escaped characters, octal bytes and line continuations. */
+    /**
+     * Tests plain text, escaped characters, octal bytes and line continuations.
+     */
     public function test_decode_literal_strings(): void {
         $decoder = new pdf_text_decoder();
         $cases = [

@@ -50,11 +50,11 @@ class pdf_unicode_map_extractor {
 
         foreach ($streams as $stream) {
             if (strpos($stream, 'beginbfchar') !== false) {
-                $map += $this->extract_chars($stream);
+                $map = array_replace($map, $this->extract_chars($stream));
             }
 
             if (strpos($stream, 'beginbfrange') !== false) {
-                $map += $this->extract_ranges($stream);
+                $map = array_replace($map, $this->extract_ranges($stream));
             }
         }
 
@@ -74,7 +74,7 @@ class pdf_unicode_map_extractor {
         }
 
         foreach ($sections[1] as $section) {
-            $map += $this->extract_char_section($section);
+            $map = array_replace($map, $this->extract_char_section($section));
         }
 
         return $map;
@@ -112,7 +112,7 @@ class pdf_unicode_map_extractor {
         }
 
         foreach ($sections[1] as $section) {
-            $map += $this->extract_range_section($section);
+            $map = array_replace($map, $this->extract_range_section($section));
         }
 
         return $map;
@@ -138,7 +138,7 @@ class pdf_unicode_map_extractor {
         }
 
         foreach ($ranges as $range) {
-            $map += $this->build_range($range);
+            $map = array_replace($map, $this->build_range($range));
         }
 
         return $map;
