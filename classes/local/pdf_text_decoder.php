@@ -201,9 +201,9 @@ class pdf_text_decoder {
         ];
 
         return preg_replace_callback(
-            '/\\(?:([nrtbf()\\])|([0-7]{1,3})|\r?\n|\r)/',
+            '/\\\\(?:([nrtbf()\\\\])|([0-7]{1,3})|\r?\n|\r)/',
             function (array $matches) use ($escapes): string {
-                if (!empty($matches[2])) {
+                if (isset($matches[2]) && $matches[2] !== '') {
                     return chr(octdec($matches[2]));
                 }
 
