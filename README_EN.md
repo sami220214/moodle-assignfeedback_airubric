@@ -191,3 +191,9 @@ Checks include PHP lint, PHP Mess Detector, Moodle Code Checker, PHPDoc Checker,
 
 ## 14. License and third-party libraries
 All PHP files in the plugin are licensed under GNU GPL v3 or later through the Moodle file header. The plugin does not bundle separate third-party libraries; the AMD module uses Moodle-provided `core/ajax`, `core/notification`, and `jquery` modules, and the UI uses the Moodle/theme Bootstrap modal API. Therefore a separate `thirdpartylibs.xml` file is not required for the current package.
+
+### Moodle audit log
+
+AI feedback requests emit Moodle events for request start, successful feedback reception, and failure after the request starts. Events record the acting user and time, assignment and student IDs, Azure OpenAI destination hostname, and a random reference linking the events. A start event records a send attempt, not proof of receipt by Azure. Failures may occur after Azure has received data. Validation failures before sending do not emit request events.
+
+Submission text, prompts, generated feedback, API keys, full endpoint URLs, and exception messages are excluded. Moodle log stores control storage, access, and retention according to the site's configuration; administrators should set these according to the organisation's policy.

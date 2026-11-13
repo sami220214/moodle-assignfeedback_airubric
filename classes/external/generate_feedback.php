@@ -27,7 +27,7 @@ use assign;
 use assignfeedback_airubric\local\eligibility;
 use assignfeedback_airubric\local\submission_text;
 use assignfeedback_airubric\local\rubric_renderer;
-use assignfeedback_airubric\service\azure_feedback_service;
+use assignfeedback_airubric\service\feedback_generator;
 use core\context\module as context_module;
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -91,8 +91,13 @@ class generate_feedback extends external_api {
         $reader = new submission_text($assign);
         $submissiontext = $submission ? $reader->get_text($submission) : '';
 
-        $service = new azure_feedback_service();
-        $result = $service->generate_with_usage(strip_tags($rubric), $submissiontext);
+        $result = feedback_generator::generate(
+            $context,
+            (int)$assign->get_instance()->id,
+            (int)$params['userid'],
+            strip_tags($rubric),
+            $submissiontext
+        );
 
         return [
             'feedback' => $result['feedback'],

@@ -49,9 +49,10 @@ class azure_feedback_service {
      *
      * @param string $rubric Rubric text.
      * @param string $submission Submission text.
+     * @param callable|null $onrequest Called immediately before sending, with the destination host only.
      * @return array{feedback: string, inputtokens: int} Generated feedback and input token count.
      */
-    public function generate_with_usage(string $rubric, string $submission): array {
+    public function generate_with_usage(string $rubric, string $submission, ?callable $onrequest = null): array {
         global $CFG;
         require_once($CFG->libdir . '/filelib.php');
 
@@ -81,6 +82,10 @@ class azure_feedback_service {
             'Content-Type: application/json',
             'api-key: ' . $config['apikey'],
         ];
+
+        if ($onrequest !== null) {
+            $onrequest((string)parse_url($url, PHP_URL_HOST));
+        }
 
         $response = $curl->post($url, json_encode($payload), [
             'CURLOPT_HTTPHEADER' => $headers,
