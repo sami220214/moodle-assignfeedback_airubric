@@ -36,10 +36,11 @@ class azure_feedback_service {
      *
      * @param string $rubric Rubric text.
      * @param string $submission Submission text.
+     * @param string $assignment Assignment instructions and context.
      * @return string Generated feedback text.
      */
-    public function generate(string $rubric, string $submission): string {
-        $result = $this->generate_with_usage($rubric, $submission);
+    public function generate(string $rubric, string $submission, string $assignment = ''): string {
+        $result = $this->generate_with_usage($rubric, $submission, null, $assignment);
 
         return $result['feedback'];
     }
@@ -50,9 +51,15 @@ class azure_feedback_service {
      * @param string $rubric Rubric text.
      * @param string $submission Submission text.
      * @param callable|null $onrequest Called immediately before sending, with the destination host only.
+     * @param string $assignment Assignment instructions and context.
      * @return array{feedback: string, inputtokens: int} Generated feedback and input token count.
      */
-    public function generate_with_usage(string $rubric, string $submission, ?callable $onrequest = null): array {
+    public function generate_with_usage(
+        string $rubric,
+        string $submission,
+        ?callable $onrequest = null,
+        string $assignment = ''
+    ): array {
         global $CFG;
         require_once($CFG->libdir . '/filelib.php');
 
@@ -65,11 +72,15 @@ class azure_feedback_service {
             'messages' => [
                 [
                     'role' => 'system',
-                    'content' => $systemprompt . ' ' . $rubric,
+                    'content' => $systemprompt,
                 ],
                 [
                     'role' => 'user',
-                    'content' => $submission,
+                    'content' => json_encode([
+                        'assignment' => $assignment,
+                        'rubric' => $rubric,
+                        'submission' => $submission,
+                    ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
                 ],
             ],
             'max_completion_tokens' => 7096,
@@ -150,7 +161,10 @@ class azure_feedback_service {
             throw new \moodle_exception('azurecommunicationerror', 'assignfeedback_airubric', '', $decoded['error']['message']);
         }
 
-        if (!is_array($decoded) || empty($decoded['choices'][0]['message']['content'])) {
+        if (
+            !is_array($decoded) || empty($decoded['choices'][0]['message']['content']) ||
+            ($decoded['choices'][0]['finish_reason'] ?? '') !== 'stop'
+        ) {
             throw new \moodle_exception('azureinvalidresponse', 'assignfeedback_airubric', '', $response);
         }
 

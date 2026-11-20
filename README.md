@@ -13,8 +13,8 @@ Laajennus näyttää opettajalle ehdotetun palautteen ja arvioidun tekoälylle l
 - Tekninen nimi: `airubric`
 - Frankenstyle-komponentti: `assignfeedback_airubric`
 - Asennuspolku: `mod/assign/feedback/airubric/`
-- Versio: `2026080700`
-- Release: `1.0.3`
+- Versio: `2026112001`
+- Release: `2.0.1`
 - Vaatii vähintään Moodlen: `4.5` (`2024100700`)
 - Kypsyys: `MATURITY_STABLE`
 
@@ -52,7 +52,7 @@ Lähde: `version.php`.
 - `classes/external/generate_feedback.php`
   - AJAX-kutsuttava External API
   - validoi parametrit, kontekstin ja capabilityt
-  - renderöi rubricin grading-controllerin kautta, mukana fallback eri Moodle-signatuureille
+  - lukee rubric-määritelmän kriteerit ja tasokuvaukset suoraan tietokannasta
   - hakee opiskelijan palautustekstin online-tekstistä ja/tai Word-/PDF-tiedostoista
   - kutsuu Azure-palvelua
   - palauttaa generoidun tekstin ja arvioidun syötetokenien määrän
@@ -95,7 +95,7 @@ Pluginin admin-asetukset (`settings.php`):
 - `assignfeedback_airubric/azureapiversion` (oletus `2024-12-01-preview`)
 
 ## 7. Azure-integraatio
-`azure_feedback_service::generate_with_usage($rubric, $submission)`:
+`azure_feedback_service::generate_with_usage($rubric, $submission, $onrequest, $assignment)`:
 - rakentaa URL:n:
   - `{endpoint}/openai/deployments/{deployment}/chat/completions?api-version={apiversion}`
 - lähettää payloadin:
@@ -112,7 +112,7 @@ Pluginin admin-asetukset (`settings.php`):
   - `inputtokens`: arvioitu syötetokenien määrä
 
 Lähetettävä sisältö muodostetaan external-luokassa:
-- rubric: `strip_tags($rubric)`
+- rubric: structured JSON with all criteria, level descriptions and scores
 - opiskelijan teksti: online-teksti ja/tai Word-/PDF-dokumentista luettu teksti
 
 ## 8. Virheenkäsittely
@@ -136,6 +136,7 @@ Frontend:
 Ulkoiseen Azure OpenAI -palveluun lähetetään palauteluonnoksen luomista varten:
 - opiskelijan palautusteksti, joka poimitaan online-tekstistä, Word-dokumenteista tai tekstipohjaisista PDF-tiedostoista
 - tehtävän arviointimatriisin kriteerit ja arviointirakenne
+- tehtävän nimi, kuvaus ja suoritusohjeet
 
 Huomio:
 - generoitu palaute näytetään opettajalle, mutta sitä ei tallenneta automaattisesti pluginin omaan tietokantaan
@@ -146,11 +147,11 @@ Huomio:
 2. Generoitu palaute ei tallennu automaattisesti arviointipalautteeksi, vaan opettaja kopioi sen manuaalisesti.
 3. Prompti ei ole erillisenä admin-asetuksena, vaan kielijonossa (`systemprompt`).
 4. Tokenimäärä on arvio, koska tarkka tokenointi riippuu käytettävästä Azure OpenAI -mallista.
-5. Plugin-hakemistossa ei ole varsinaista automatisoitua testipakettia (unit/integration). Repossa on kuitenkin GitHub Actions -CI työnkulku Moodle Plugin CI -tarkistuksille.
+5. PHPUnit-testit ovat `tests/`-hakemistossa. GitHub Actions ajaa Moodle Plugin CI -tarkistukset. Mallin palautteen sisällöllinen laatu vaatii erillisen kokeilun.
 
 ## 11. Käyttöönoton tarkistuslista
 1. Asenna plugin Moodleen polkuun `mod/assign/feedback/airubric/`.
-2. Aja Moodlen päivitys, jotta versio `2026080500` rekisteröityy.
+2. Aja Moodlen päivitys, jotta versio `2026112001` rekisteröityy.
 3. Aseta Azure-asetukset (`endpoint`, `apikey`, `deployment`, `api version`).
 4. Varmista capability `assignfeedback/airubric:generate` tarvittaville rooleille.
 5. Varmista, että tehtäväaktiviteetissa käytetään rubric-arviointia.
@@ -191,3 +192,15 @@ Tarkistuksiin kuuluvat PHP lint, PHP Mess Detector, Moodle Code Checker, PHPDoc 
 
 ## 14. Lisenssi ja kolmannen osapuolen kirjastot
 Kaikki pluginin PHP-tiedostot on lisensoitu GNU GPL v3 or later -lisenssillä Moodle-otsikon mukaisesti. Pluginin mukana ei toimiteta erillisiä kolmannen osapuolen kirjastoja; AMD-moduuli käyttää Moodlen tarjoamia `core/ajax`, `core/notification` ja `jquery` -moduuleja sekä käyttöliittymässä Moodlen/teeman Bootstrap-modal API:a. Tämän vuoksi erillistä `thirdpartylibs.xml`-tiedostoa ei tarvita nykyisessä paketissa.
+
+## Muutokset versiossa 2.0
+- AI saa tehtävän nimen, kuvauksen ja suoritusohjeet erillään matriisista ja palautuksesta.
+- Matriisin kaikki kriteerit, tasokuvaukset ja pisteet luetaan suoraan määritelmästä rakenteiseen JSON-muotoon ilman aiempia opiskelijakohtaisia arvioita.
+- Promptit tarkistavat ensin tehtävänannon vastaavuuden ja edellyttävät tekstinäyttöä jokaisesta kriteeristä. Pisteitä tai arvosanaa ei anneta.
+- Lukukelvoton tai tukematon palautusliite estää generoinnin; tiedoston nimi näytetään opettajalle. Kesken jäänyt AI-vastaus hylätään.
+- Tehtävänannon liitteitä, kuvia ja linkkien kohteita ei lueta. AI kertoo tästä aiheutuvat arvioinnin rajoitteet. Dokumenttien poiminnan täydellisyyttä ei voida varmistaa; DOC- ja PDF-poiminta on edelleen best-effort.
+- Aja normaali Moodle-päivitys versioon `2026112001`. Tietokantarakenne ei muutu. Paikallinen systemprompt-kielikäännös voi ohittaa uuden oletuspromptin.
+- Uudet PHPUnit-testit tarkistavat lukukelvottoman liitteen sekä katkenneen ja valmiin AI-vastauksen käsittelyn. Pedagoginen laatu on testattava käytössä olevalla Azure-mallilla, myös väärän aiheen ja upotettujen ohitusohjeiden tapauksissa.
+
+## Korjaus 2.0.1
+Arviointimatriisi tunnistetaan ohjaimen luokan perusteella sekä kelpoisuustarkistuksessa että matriisin viennissä. Tämä korjaa virheen `Call to undefined method gradingform_rubric_controller::get_method()`. Mukana on matriisin viennin regressiotesti.

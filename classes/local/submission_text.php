@@ -53,16 +53,25 @@ class submission_text {
     public function get_text(stdClass $submission): string {
         $parts = [];
 
-        $onlinetext = trim(strip_tags($this->get_online_text_submission((int)$submission->id)));
+        $onlinetext = trim(html_to_text($this->get_online_text_submission((int)$submission->id), 0, false));
         if ($onlinetext !== '') {
             $parts[] = $onlinetext;
         }
 
         foreach ($this->get_supported_files((int)$submission->id) as $file) {
-            $text = trim($this->extract_file_text($file));
-            if ($text !== '') {
-                $parts[] = $text;
+            $extension = strtolower(pathinfo($file->get_filename(), PATHINFO_EXTENSION));
+            if (!in_array($extension, ['docx', 'doc', 'pdf'], true)) {
+                throw new \moodle_exception('unreadableattachment', 'assignfeedback_airubric', '', $file->get_filename());
             }
+            try {
+                $text = trim($this->extract_file_text($file));
+            } catch (\Throwable $exception) {
+                throw new \moodle_exception('unreadableattachment', 'assignfeedback_airubric', '', $file->get_filename());
+            }
+            if ($text === '') {
+                throw new \moodle_exception('unreadableattachment', 'assignfeedback_airubric', '', $file->get_filename());
+            }
+            $parts[] = $text;
         }
 
         return trim(implode("\n\n", $parts));
@@ -82,10 +91,10 @@ class submission_text {
     }
 
     /**
-     * Returns supported submitted files.
+     * Returns all submitted files for explicit readability validation.
      *
      * @param int $submissionid Submission ID.
-     * @return stored_file[] Supported submitted files.
+     * @return stored_file[] Submitted files.
      */
     private function get_supported_files(int $submissionid): array {
         $fs = get_file_storage();
@@ -99,10 +108,8 @@ class submission_text {
             false
         );
 
-        return array_filter($files, function (stored_file $file): bool {
-            $extension = strtolower(pathinfo($file->get_filename(), PATHINFO_EXTENSION));
-            return in_array($extension, ['docx', 'doc', 'pdf'], true);
-        });
+        // Inspect every attachment so unsupported files cannot silently disappear.
+        return $files;
     }
 
     /**

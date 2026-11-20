@@ -68,7 +68,12 @@ class eligibility {
         }
 
         $reader = new submission_text($this->assignment);
-        $text = $reader->get_text($submission);
+        try {
+            $text = $reader->get_text($submission);
+        } catch (\moodle_exception $exception) {
+            $state->reason = $exception->getMessage();
+            return $state;
+        }
         if (trim($text) === '') {
             $state->reason = get_string('noteligible_nosubmissiontext', 'assignfeedback_airubric');
             return $state;
@@ -97,18 +102,6 @@ class eligibility {
     private function has_rubric(): bool {
         $gradingmanager = get_grading_manager($this->assignment->get_context(), 'mod_assign', 'submissions');
         $controller = $gradingmanager->get_active_controller();
-        if (!$controller) {
-            return false;
-        }
-
-        if (method_exists($controller, 'get_method')) {
-            return $controller->get_method() === 'rubric';
-        }
-
-        if (method_exists($controller, 'get_name')) {
-            return $controller->get_name() === 'rubric';
-        }
-
-        return stripos(get_class($controller), 'rubric') !== false;
+        return $controller instanceof \gradingform_rubric_controller;
     }
 }

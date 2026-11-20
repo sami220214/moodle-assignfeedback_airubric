@@ -43,6 +43,7 @@ class provider implements metadata_provider {
             [
                 'submissiontext' => 'privacy:metadata:azure_openai:submissiontext',
                 'rubric' => 'privacy:metadata:azure_openai:rubric',
+                'assignment' => 'privacy:metadata:azure_openai:assignment',
             ],
             'privacy:metadata:azure_openai'
         );

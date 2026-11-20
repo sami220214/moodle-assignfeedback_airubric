@@ -35,6 +35,7 @@ class feedback_generator {
      * @param int $userid Student ID.
      * @param string $rubric Plain text rubric.
      * @param string $submissiontext Submission text.
+     * @param string $assignment Assignment instructions and context.
      * @return array{feedback: string, inputtokens: int} Generated response.
      */
     public static function generate(
@@ -42,7 +43,8 @@ class feedback_generator {
         int $assignmentid,
         int $userid,
         string $rubric,
-        string $submissiontext
+        string $submissiontext,
+        string $assignment = ''
     ): array {
         $service = new azure_feedback_service();
         // A reference pairs events even when several requests run concurrently.
@@ -65,7 +67,8 @@ class feedback_generator {
                     $eventdata['other']['servicehost'] = $host;
                     \assignfeedback_airubric\event\feedback_requested::create($eventdata)->trigger();
                     $started = true;
-                }
+                },
+                $assignment
             );
         } catch (\Throwable $exception) {
             if ($started) {

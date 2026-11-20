@@ -86,7 +86,7 @@ class generate_feedback extends external_api {
         }
 
         $renderer = new rubric_renderer($assign, $context, $course, $cm);
-        $rubric = $renderer->render_for_user((int)$params['userid']);
+        $rubric = $renderer->render_definition();
         $submission = $assign->get_user_submission($params['userid'], false);
         $reader = new submission_text($assign);
         $submissiontext = $submission ? $reader->get_text($submission) : '';
@@ -95,8 +95,17 @@ class generate_feedback extends external_api {
             $context,
             (int)$assign->get_instance()->id,
             (int)$params['userid'],
-            strip_tags($rubric),
-            $submissiontext
+            $rubric,
+            $submissiontext,
+            json_encode([
+                'name' => html_to_text($assign->get_instance()->name, 0, false),
+                'instructions' => content_to_text(
+                    $assign->get_instance()->intro ?? '',
+                    $assign->get_instance()->introformat ?? FORMAT_HTML
+                ),
+                'activityinstructions' => html_to_text($assign->get_instance()->activity ?? '', 0, false),
+                'materials' => get_string('assignmentmaterialsnotice', 'assignfeedback_airubric'),
+            ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)
         );
 
         return [

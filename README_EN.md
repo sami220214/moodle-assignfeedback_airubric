@@ -13,8 +13,8 @@ The plugin shows the suggested feedback and the estimated number of input tokens
 - Technical name: `airubric`
 - Frankenstyle component: `assignfeedback_airubric`
 - Installation path: `mod/assign/feedback/airubric/`
-- Version: `2026080700`
-- Release: `1.0.3`
+- Version: `2026112001`
+- Release: `2.0.1`
 - Requires at least Moodle: `4.5` (`2024100700`)
 - Maturity: `MATURITY_STABLE`
 
@@ -52,7 +52,7 @@ Source: `version.php`.
 - `classes/external/generate_feedback.php`
   - AJAX-callable External API
   - validates parameters, context, and capabilities
-  - renders the rubric through the grading controller, with fallbacks for different Moodle signatures
+  - reads rubric criteria and level descriptions directly from the definition tables
   - retrieves the student's submission text from online text and/or Word/PDF files
   - calls the Azure service
   - returns the generated text and estimated input token count
@@ -95,7 +95,7 @@ Plugin admin settings (`settings.php`):
 - `assignfeedback_airubric/azureapiversion` (default `2024-12-01-preview`)
 
 ## 7. Azure integration
-`azure_feedback_service::generate_with_usage($rubric, $submission)`:
+`azure_feedback_service::generate_with_usage($rubric, $submission, $onrequest, $assignment)`:
 - builds the URL:
   - `{endpoint}/openai/deployments/{deployment}/chat/completions?api-version={apiversion}`
 - sends the payload:
@@ -112,7 +112,7 @@ Plugin admin settings (`settings.php`):
   - `inputtokens`: estimated input token count
 
 The sent content is formed in the external class:
-- rubric: `strip_tags($rubric)`
+- rubric: structured JSON with all criteria, level descriptions and scores
 - student text: online text and/or text read from Word/PDF documents
 
 ## 8. Error handling
@@ -136,6 +136,7 @@ Frontend:
 The following data is sent to the external Azure OpenAI service to generate the feedback draft:
 - the student's submission text, extracted from online text, Word documents, or text-based PDF files
 - the assignment rubric criteria and grading structure
+- the assignment name, description and activity instructions
 
 Notes:
 - generated feedback is shown to the teacher, but it is not automatically stored in the plugin's own database
@@ -146,11 +147,11 @@ Notes:
 2. Generated feedback is not automatically stored as assessment feedback; the teacher copies it manually.
 3. The prompt is not a separate admin setting, but a language string (`systemprompt`).
 4. Token count is an estimate because exact tokenization depends on the deployed Azure OpenAI model.
-5. The plugin directory does not include an actual automated test suite (unit/integration). The repository does include a GitHub Actions CI workflow for Moodle Plugin CI checks.
+5. PHPUnit tests are in `tests/`; GitHub Actions runs Moodle Plugin CI. Model feedback quality requires separate evaluation.
 
 ## 11. Deployment checklist
 1. Install the plugin in Moodle at `mod/assign/feedback/airubric/`.
-2. Run the Moodle upgrade so version `2026080500` is registered.
+2. Run the Moodle upgrade so version `2026112001` is registered.
 3. Configure the Azure settings (`endpoint`, `apikey`, `deployment`, `api version`).
 4. Ensure the `assignfeedback/airubric:generate` capability is granted to the required roles.
 5. Ensure the assignment activity uses rubric grading.
@@ -197,3 +198,15 @@ All PHP files in the plugin are licensed under GNU GPL v3 or later through the M
 AI feedback requests emit Moodle events for request start, successful feedback reception, and failure after the request starts. Events record the acting user and time, assignment and student IDs, Azure OpenAI destination hostname, and a random reference linking the events. A start event records a send attempt, not proof of receipt by Azure. Failures may occur after Azure has received data. Validation failures before sending do not emit request events.
 
 Submission text, prompts, generated feedback, API keys, full endpoint URLs, and exception messages are excluded. Moodle log stores control storage, access, and retention according to the site's configuration; administrators should set these according to the organisation's policy.
+
+## Changes in version 2.0
+- Sends assignment name, description and activity instructions separately from rubric and submission.
+- Exports all rubric criteria, levels and scores directly from the definition as structured JSON, without previous student grades.
+- Finnish and English prompts check task relevance first and require evidence for each criterion. No grades or scores are generated.
+- Unreadable or unsupported submission attachments block generation with a named error; incomplete AI completions are rejected.
+- Assignment attachments, images and linked content are not automatically read. The assistant must state resulting assessment limitations. Extraction completeness cannot be guaranteed; legacy DOC and PDF extraction remains best-effort.
+- Run the normal Moodle upgrade to version `2026112001`; no database schema change is required. Local language customisations of systemprompt can override the new default.
+- PHPUnit coverage includes unreadable attachments and incomplete/completed responses. Validate pedagogical quality against the configured Azure model, including off-topic submissions and embedded instruction attacks.
+
+## Fix in 2.0.1
+Recognise rubric controllers by their class in eligibility and rubric export, fixing `Call to undefined method gradingform_rubric_controller::get_method()`. Includes a rubric export regression test.

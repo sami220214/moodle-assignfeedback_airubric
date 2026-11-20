@@ -59,59 +59,42 @@ class rubric_renderer {
     }
 
     /**
-     * Renders the active rubric for a user submission.
+     * Exports every criterion and level from the active rubric definition.
      *
-     * @param int $userid Student user ID.
-     * @return string Rendered rubric HTML.
+     * @return string Structured rubric JSON.
      */
-    public function render_for_user(int $userid): string {
+    public function render_definition(): string {
+        global $DB;
         $controller = get_grading_manager($this->context, 'mod_assign', 'submissions')->get_active_controller();
-        if (!$controller) {
-            return '';
+        if (!$controller instanceof \gradingform_rubric_controller) {
+            throw new \moodle_exception('noteligible_norubric', 'assignfeedback_airubric');
         }
-
-        try {
-            if ($this->controller_expects_grade($controller)) {
-                $grade = $this->assignment->get_user_grade($userid, true);
-                return (string)$controller->render_grade($grade, false, true, false, false);
+        $definition = $controller->get_definition();
+        if (!$definition || empty($definition->id)) {
+            throw new \moodle_exception('noteligible_norubric', 'assignfeedback_airubric');
+        }
+        $criteria = $DB->get_records('gradingform_rubric_criteria', ['definitionid' => $definition->id], 'sortorder, id');
+        $result = [];
+        foreach ($criteria as $criterion) {
+            $levels = $DB->get_records('gradingform_rubric_levels', ['criterionid' => $criterion->id], 'score, id');
+            if (!$levels) {
+                throw new \moodle_exception('noteligible_norubric', 'assignfeedback_airubric');
             }
-        } catch (\Throwable $e) {
-            return $this->render_with_page($controller, $userid);
+            $item = [
+                'criterion' => content_to_text($criterion->description, $criterion->descriptionformat),
+                'levels' => [],
+            ];
+            foreach ($levels as $level) {
+                $item['levels'][] = [
+                    'score' => (float)$level->score,
+                    'description' => content_to_text($level->definition, $level->definitionformat),
+                ];
+            }
+            $result[] = $item;
         }
-
-        return $this->render_with_page($controller, $userid);
-    }
-
-    /**
-     * Returns whether the controller render method expects a grade record first.
-     *
-     * @param object $controller Grading controller.
-     * @return bool
-     */
-    private function controller_expects_grade($controller): bool {
-        $method = new \ReflectionMethod($controller, 'render_grade');
-        $firstparam = $method->getParameters()[0] ?? null;
-
-        return $firstparam && $firstparam->getName() === 'grade';
-    }
-
-    /**
-     * Renders rubric through a Moodle page object.
-     *
-     * @param object $controller Grading controller.
-     * @param int $userid Student user ID.
-     * @return string Rendered rubric HTML.
-     */
-    private function render_with_page($controller, int $userid): string {
-        global $CFG;
-        require_once($CFG->libdir . '/pagelib.php');
-
-        $page = new \moodle_page();
-        $page->set_context($this->context);
-        $page->set_course($this->course);
-        $page->set_cm($this->cm);
-        $page->set_url(new \moodle_url('/mod/assign/view.php', ['id' => $this->cm->id]));
-
-        return (string)$controller->render_grade($page, $userid, [], '', false);
+        if (!$result) {
+            throw new \moodle_exception('noteligible_norubric', 'assignfeedback_airubric');
+        }
+        return json_encode($result, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
     }
 }
