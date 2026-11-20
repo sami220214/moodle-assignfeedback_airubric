@@ -3,6 +3,7 @@
 ## 1. Tarkoitus
 `assignfeedback_airubric` on Moodle-tehtäväaktiviteetin palautelaajennus, joka tuottaa opettajalle sanallisen palauteluonnoksen:
 - arviointimatriisin (rubric) perusteella
+- tehtävän nimen, kuvauksen ja suoritusohjeiden perusteella
 - opiskelijan online-tekstipalautuksen, Word-dokumentin (`.docx`/`.doc`) tai tekstipohjaisen PDF-dokumentin (`.pdf`) perusteella
 
 Laajennus näyttää opettajalle ehdotetun palautteen ja arvioidun tekoälylle lähetettävän syötetokenien määrän. Generoitua palautetta ei tallenneta automaattisesti pluginin omaan tietokantaan.
@@ -27,11 +28,12 @@ Lähde: `version.php`.
    - tehtävässä on käytössä rubric-arviointi
    - opiskelijalla on palautus
    - palautuksessa on online-teksti, luettava Word-dokumentti tai tekstipohjainen PDF
+   - jokainen palautusliite on tuettu ja siitä saadaan tekstiä; lukukelvoton tai tukematon liite estää generoinnin
 4. Opettaja painaa palautepainiketta.
 5. AMD-moduuli kutsuu AJAX-endpointia `assignfeedback_airubric_generate_feedback`.
-6. External API hakee rubric-sisällön, opiskelijan online-tekstin ja/tai Word-/PDF-dokumentin tekstisisällön.
+6. External API hakee tehtävän nimen, kuvauksen ja suoritusohjeet, rakenteisen matriisimääritelmän sekä opiskelijan palautustekstin.
 7. Palvelu arvioi syötetokenien määrän ja estää kutsun, jos arvio ylittää `100000` tokenia.
-8. Azure OpenAI tuottaa palauteluonnoksen.
+8. Azure OpenAI tuottaa palauteluonnoksen. Prompti edellyttää ensin tehtävänannon vastaavuuden tarkistamista ja sitten kaikkien kriteerien käsittelyä tekstihavaintojen perusteella ilman pisteitä tai arvosanaa.
 9. Generoitu teksti ja tokeniarvio näytetään modalissa, ja palaute voidaan kopioida leikepöydälle.
 
 ## 4. Arkkitehtuuri
@@ -49,18 +51,22 @@ Lähde: `version.php`.
   - kokoaa online-tekstin ja tuettujen dokumenttitiedostojen tekstisisällön yhdeksi palautustekstiksi
   - lukee `.docx`-tiedostot OOXML-sisällöstä ja `.doc`-tiedostot PHP-pohjaisena best-effort-tekstipoimintana
   - lukee tekstipohjaiset `.pdf`-tiedostot PDF:n tekstikerroksesta best-effort-tekstipoimintana; skannatut PDF:t vaativat OCR:n eivätkä kuulu nykyiseen tukeen
+- `classes/local/rubric_renderer.php`
+  - `render_definition()` lukee yhteisen matriisimääritelmän kaikki kriteerit, tasokuvaukset ja pisteet rakenteiseksi JSON-tekstiksi ilman aiempia opiskelijakohtaisia arvioita
 - `classes/external/generate_feedback.php`
   - AJAX-kutsuttava External API
   - validoi parametrit, kontekstin ja capabilityt
-  - lukee rubric-määritelmän kriteerit ja tasokuvaukset suoraan tietokannasta
+  - kokoaa tehtävänannon ja hakee matriisimääritelmän `rubric_renderer`-luokalla
   - hakee opiskelijan palautustekstin online-tekstistä ja/tai Word-/PDF-tiedostoista
   - kutsuu Azure-palvelua
   - palauttaa generoidun tekstin ja arvioidun syötetokenien määrän
+- `classes/service/feedback_generator.php`
+  - kutsuu Azure-palvelua ja kirjaa pyynnön elinkaaren Moodlen tapahtumalokiin ilman sisältöaineistoa
 - `classes/service/azure_feedback_service.php`
   - muodostaa HTTP-kutsun Azure OpenAI Chat Completions -rajapintaan
   - arvioi syötetokenien määrän ennen kutsua
   - estää liian suuret pyynnöt `100000` tokenin rajalla
-  - käsittelee cURL- ja vastemuotovirheet
+  - käsittelee cURL- ja vastemuotovirheet; hyväksyy vain vastauksen, jonka `finish_reason` on `stop`
 
 ### 4.2 UI (Mustache + AMD)
 - `templates/modal.mustache`
@@ -111,9 +117,12 @@ Pluginin admin-asetukset (`settings.php`):
   - `feedback`: generoitu palaute
   - `inputtokens`: arvioitu syötetokenien määrä
 
-Lähetettävä sisältö muodostetaan external-luokassa:
-- rubric: structured JSON with all criteria, level descriptions and scores
-- opiskelijan teksti: online-teksti ja/tai Word-/PDF-dokumentista luettu teksti
+External-luokka kokoaa aineiston ja palveluluokka muodostaa viestit:
+- `system`: aktiivisen Moodle-kielen `systemprompt`-ohjeistus
+- `user`: JSON-olio, jonka kentät ovat `assignment`, `rubric` ja `submission`
+- `assignment`: JSON-tekstinä tehtävän nimi, kuvaus, suoritusohjeet ja tieto lukematta jäävistä tehtävänannon aineistoista
+- `rubric`: JSON-tekstinä kaikki kriteerit, tasokuvaukset ja pisteet
+- `submission`: online-teksti ja/tai Word-/PDF-dokumenteista luettu teksti
 
 ## 8. Virheenkäsittely
 Backend:
@@ -121,7 +130,8 @@ Backend:
 - liian suuri arvioitu syöte -> `inputtokenlimitexceeded`
 - cURL-virhe -> `azurecommunicationerror`
 - Azure JSON error (`error.message`) -> `azurecommunicationerror`
-- puutteellinen vastemuoto -> `azureinvalidresponse`
+- puutteellinen vastemuoto tai muu valmistumissyy kuin `stop` -> `azureinvalidresponse`
+- lukukelvoton tai tukematon palautusliite -> `unreadableattachment` (kelpoisuustarkistuksessa syy välitetään `noteligible`-virheellä)
 - ei-kelpoinen tapaus -> `noteligible`
 
 Frontend:
@@ -148,6 +158,8 @@ Huomio:
 3. Prompti ei ole erillisenä admin-asetuksena, vaan kielijonossa (`systemprompt`).
 4. Tokenimäärä on arvio, koska tarkka tokenointi riippuu käytettävästä Azure OpenAI -mallista.
 5. PHPUnit-testit ovat `tests/`-hakemistossa. GitHub Actions ajaa Moodle Plugin CI -tarkistukset. Mallin palautteen sisällöllinen laatu vaatii erillisen kokeilun.
+6. Tehtävänannon liitteitä, kuvia ja linkkien kohteita ei lueta. Prompti ohjaa ilmoittamaan puuttuvan aineiston aiheuttamat arvioinnin rajoitteet. Myös palautusdokumenttien tekstipoiminta voi olla osittainen ilman, että sitä pystytään tunnistamaan.
+7. Tehtävänannon puuttuminen ei estä kutsua teknisesti; prompti ohjaa kertomaan, ettei vastaavuutta voida ratkaista. Paikallinen `systemprompt`-kielikäännös voi ohittaa uuden oletusohjeistuksen.
 
 ## 11. Käyttöönoton tarkistuslista
 1. Asenna plugin Moodleen polkuun `mod/assign/feedback/airubric/`.
@@ -159,19 +171,25 @@ Huomio:
 7. Testaa generointi opettajan arviointinäkymästä.
 8. Tarkista Moodle-lokit virhetilanteissa.
 
+Varmista lisäksi, että tehtävän varsinainen aihe ja suoritusohjeet ovat kuvauksessa tai suoritusohjeissa tekstinä. Kokeile myös väärästä aiheesta kirjoitettua vastausta, osittaista vastausta ja opiskelijan tekstiin upotettua ohitusohjetta. Promptin noudattaminen on tarkistettava käytössä olevalla Azure-mallilla.
+
 ## 12. Tiedostokartta
 - `version.php`
 - `README.md`
 - `README_EN.md`
-- `LICENSE`
 - `settings.php`
 - `locallib.php`
 - `db/access.php`
 - `db/services.php`
 - `classes/local/eligibility.php`
 - `classes/local/submission_text.php`
+- `classes/local/rubric_renderer.php`
 - `classes/external/generate_feedback.php`
 - `classes/service/azure_feedback_service.php`
+- `classes/service/feedback_generator.php`
+- `classes/event/feedback_requested.php`
+- `classes/event/feedback_generated.php`
+- `classes/event/feedback_failed.php`
 - `classes/privacy/provider.php`
 - `templates/modal.mustache`
 - `amd/src/feedback_button.js`
@@ -179,6 +197,9 @@ Huomio:
 - `lang/fi/assignfeedback_airubric.php`
 - `lang/en/assignfeedback_airubric.php`
 - `.github/workflows/ci.yml`
+- `tests/feedback_input_test.php`
+- `tests/feedback_events_test.php`
+- `tests/pdf_text_decoder_test.php`
 
 ## 13. CI
 `.github/workflows/ci.yml` ajaa Moodle Plugin CI -tarkistukset GitHub Actionsissa push- ja pull request -tapahtumissa.
@@ -204,3 +225,11 @@ Kaikki pluginin PHP-tiedostot on lisensoitu GNU GPL v3 or later -lisenssillä Mo
 
 ## Korjaus 2.0.1
 Arviointimatriisi tunnistetaan ohjaimen luokan perusteella sekä kelpoisuustarkistuksessa että matriisin viennissä. Tämä korjaa virheen `Call to undefined method gradingform_rubric_controller::get_method()`. Mukana on matriisin viennin regressiotesti.
+
+Lisäksi korjattiin PHP-tiedostojen LF-rivinvaihdot, testien PHPDoc-kommentit, monirivisen ehdon muotoilu ja kielimerkkijonojen järjestys. Matriisin vienti nimettiin `render_definition()`-metodiksi ja käyttämätön opiskelijatunnus poistettiin.
+
+## Moodlen tapahtumaloki
+
+Palautepyynnöistä kirjataan tapahtumat lähetysyritykselle, palautteen vastaanottamiselle ja lähetysyrityksen jälkeiselle virheelle. Tapahtumat sisältävät toimijan ja ajankohdan, tehtävän ja opiskelijan tunnisteet, Azure-palvelimen isäntänimen sekä tapahtumat yhdistävän satunnaisen pyyntötunnisteen. Aloitustapahtuma ei todista Azuren vastaanottaneen aineistoa. Virhe voi tapahtua myös vastaanoton jälkeen. Ennen lähetystä keskeytyvä validointi ei tuota pyyntötapahtumia.
+
+Palautustekstiä, prompteja, tuotettua palautetta, API-avaimia, kokonaisia päätepisteosoitteita tai poikkeusviestejä ei tallenneta näihin tapahtumiin. Lokien tallennus, käyttöoikeudet ja säilytys määräytyvät Moodlen lokiasetusten mukaan.
