@@ -27,7 +27,6 @@ namespace assignfeedback_airubric\privacy;
 use core_privacy\local\metadata\collection;
 use core_privacy\local\metadata\provider as metadata_provider;
 
-
 /**
  * Privacy provider for assignfeedback_airubric.
  */

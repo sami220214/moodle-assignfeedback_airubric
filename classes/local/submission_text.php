@@ -28,7 +28,6 @@ use assign;
 use stored_file;
 use stdClass;
 
-
 /**
  * Reads supported assignment submission text sources for AI feedback.
  */

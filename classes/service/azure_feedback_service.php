@@ -24,7 +24,6 @@
 
 namespace assignfeedback_airubric\service;
 
-
 /**
  * Builds and sends AI feedback requests to Azure OpenAI endpoint.
  */
