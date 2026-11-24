@@ -21,6 +21,7 @@
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 use assignfeedback_airubric\local\eligibility;
 
 defined('MOODLE_INTERNAL') || die();

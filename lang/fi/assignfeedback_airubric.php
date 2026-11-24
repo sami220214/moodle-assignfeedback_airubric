@@ -21,6 +21,7 @@
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 $string['airubric:generate'] = 'Luo tekoälyn arviointimatriisipalautetta';
 $string['assignmentmaterialsnotice'] = 'Tehtävänannon liitteitä, linkkien kohteita ja kuvia ei ole luettu. Jos arviointi edellyttää niitä, ilmoita arvioinnin rajoitus.';
 $string['azureapikey'] = 'Azure OpenAI API-avain';

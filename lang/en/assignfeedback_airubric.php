@@ -21,6 +21,7 @@
  * @copyright 2026 Sami Simpanen
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 $string['airubric:generate'] = 'Generate AI rubric feedback';
 $string['assignmentmaterialsnotice'] = 'Assignment attachments, linked content and images have not been read. State the assessment limitation if they are required.';
 $string['azureapikey'] = 'Azure OpenAI API key';
