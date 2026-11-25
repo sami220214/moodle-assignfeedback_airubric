@@ -49,6 +49,7 @@ $string['inputtokenlimitexceeded'] = 'AI feedback cannot be generated because th
 $string['inputtokens'] = 'Estimated input tokens sent to AI: {$a}';
 $string['modaltitle'] = 'Generate written feedback from rubric';
 $string['noteligible'] = 'AI feedback cannot be generated: {$a}';
+$string['noteligible_disabled'] = 'AI Rubric Feedback is disabled for this assignment.';
 $string['noteligible_noonlinetext'] = 'Student submission is not available as online text.';
 $string['noteligible_norubric'] = 'Rubric grading method is not enabled for this assignment.';
 $string['noteligible_nosubmission'] = 'Student has not submitted anything yet.';

@@ -14,8 +14,8 @@ The plugin shows the suggested feedback and the estimated number of input tokens
 - Technical name: `airubric`
 - Frankenstyle component: `assignfeedback_airubric`
 - Installation path: `mod/assign/feedback/airubric/`
-- Version: `2026112001`
-- Release: `2.0.1`
+- Version: `2026112500`
+- Release: `2.0.2`
 - Requires at least Moodle: `4.5` (`2024100700`)
 - Maturity: `MATURITY_STABLE`
 
@@ -23,7 +23,7 @@ Source: `version.php`.
 
 ## 3. High-level flow
 1. The teacher opens the student's grading view in the assignment.
-2. `locallib.php` renders the button and modal if the teacher has the `assignfeedback/airubric:generate` capability.
+2. `locallib.php` renders the heading, button and modal only when the feedback type is enabled in the assignment settings and the teacher has the `assignfeedback/airubric:generate` capability. Disabling the feedback type prevents these elements from being rendered and skips button JavaScript initialisation. The AJAX endpoint also blocks generation when the feedback type is disabled.
 3. Eligibility is checked:
    - rubric grading is enabled for the assignment
    - the student has a submission
@@ -200,6 +200,7 @@ Also ensure the actual task topic and instructions appear as text in the assignm
 - `tests/feedback_input_test.php`
 - `tests/feedback_events_test.php`
 - `tests/pdf_text_decoder_test.php`
+- `tests/plugin_enabled_test.php`
 
 ## 13. CI
 `.github/workflows/ci.yml` runs Moodle Plugin CI checks in GitHub Actions on push and pull request events.
@@ -228,6 +229,16 @@ Submission text, prompts, generated feedback, API keys, full endpoint URLs, and 
 - Assignment attachments, images and linked content are not automatically read. The assistant must state resulting assessment limitations. Extraction completeness cannot be guaranteed; legacy DOC and PDF extraction remains best-effort.
 - Run the normal Moodle upgrade to version `2026112001`; no database schema change is required. Local language customisations of systemprompt can override the new default.
 - PHPUnit coverage includes unreadable attachments and incomplete/completed responses. Validate pedagogical quality against the configured Azure model, including off-topic submissions and embedded instruction attacks.
+
+## Fix in 2.0.2
+
+The assignment feedback type setting now controls AI feedback through Moodle's standard assignment-specific enabled check. After a teacher disables the feedback type and saves the settings, its heading and Feedback button are no longer rendered in the grading view. The endpoint also rejects direct requests and requests from previously opened grading views while the feedback type is disabled.
+
+The regression test `tests/plugin_enabled_test.php` checks toggling the setting and verifies that a disabled feedback type adds no button to the grading form even for a user with permission. Run the normal Moodle upgrade to version `2026112500` (release `2.0.2`); the database schema is unchanged.
+
+UI verification: disable the feedback type in the assignment settings, save and reopen a student's grading view. Confirm that the heading and button are absent. Enable the feedback type again and confirm that the button returns for a user with the required capability.
+
+Local validation for version 2.0.2: all PHP files passed syntax checks. PHPUnit passed 7 tests and 47 assertions on Moodle 5.3+, PHP 8.3.31 and MariaDB 11.4.13. PHPUnit 11 reported four deprecations for test class `@covers` doc-comment metadata. Moodle 4.5 compatibility was not checked in this local run.
 
 ## Fix in 2.0.1
 Recognise rubric controllers by their class in eligibility and rubric export, fixing `Call to undefined method gradingform_rubric_controller::get_method()`. Includes a rubric export regression test.

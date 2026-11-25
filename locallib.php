@@ -42,15 +42,6 @@ class assign_feedback_airubric extends assign_feedback_plugin {
     }
 
     /**
-     * Plugin has no custom persisted grading fields.
-     *
-     * @return bool
-     */
-    public function is_enabled() {
-        return true;
-    }
-
-    /**
      * Add feedback button into grading form.
      *
      * @param stdClass|null $submissionorgrade
@@ -60,7 +51,10 @@ class assign_feedback_airubric extends assign_feedback_plugin {
     public function get_form_elements($submissionorgrade, MoodleQuickForm $mform, stdClass $data) {
         global $PAGE, $OUTPUT;
 
-        if (!has_capability('assignfeedback/airubric:generate', $this->assignment->get_context())) {
+        if (
+            !$this->is_enabled()
+                || !has_capability('assignfeedback/airubric:generate', $this->assignment->get_context())
+        ) {
             return $this->has_form_elements_result();
         }
 

@@ -49,6 +49,7 @@ $string['inputtokenlimitexceeded'] = 'Tekoälypalautetta ei voida luoda, koska a
 $string['inputtokens'] = 'Tekoälylle lähetettävät arvioidut tokenit: {$a}';
 $string['modaltitle'] = 'Luo sanallinen palaute perustuen arviointimatriisiin';
 $string['noteligible'] = 'Tekoälypalautetta ei voida luoda: {$a}';
+$string['noteligible_disabled'] = 'Tekoälyn arviointimatriisipalaute on poistettu käytöstä tässä tehtävässä.';
 $string['noteligible_noonlinetext'] = 'Palautus ei ole online-tekstinä.';
 $string['noteligible_norubric'] = 'Tehtävässä ei ole käytössä arviointimatriisia.';
 $string['noteligible_nosubmission'] = 'Opiskelijalla ei ole palautusta.';

@@ -78,6 +78,15 @@ class generate_feedback extends external_api {
         require_capability('assignfeedback/airubric:generate', $context);
 
         $assign = new assign($context, $cm, $course);
+        $plugin = $assign->get_feedback_plugin_by_type('airubric');
+        if (!$plugin || !$plugin->is_enabled()) {
+            throw new \moodle_exception(
+                'noteligible',
+                'assignfeedback_airubric',
+                '',
+                get_string('noteligible_disabled', 'assignfeedback_airubric')
+            );
+        }
         $checker = new eligibility($assign);
         $state = $checker->for_user($params['userid']);
 

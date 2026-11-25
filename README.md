@@ -14,8 +14,8 @@ Laajennus näyttää opettajalle ehdotetun palautteen ja arvioidun tekoälylle l
 - Tekninen nimi: `airubric`
 - Frankenstyle-komponentti: `assignfeedback_airubric`
 - Asennuspolku: `mod/assign/feedback/airubric/`
-- Versio: `2026112001`
-- Release: `2.0.1`
+- Versio: `2026112500`
+- Release: `2.0.2`
 - Vaatii vähintään Moodlen: `4.5` (`2024100700`)
 - Kypsyys: `MATURITY_STABLE`
 
@@ -23,7 +23,7 @@ Lähde: `version.php`.
 
 ## 3. Korkean tason toiminta
 1. Opettaja avaa opiskelijan arviointinäkymän tehtävässä.
-2. `locallib.php` renderöi painikkeen ja modalin, jos opettajalla on capability `assignfeedback/airubric:generate`.
+2. `locallib.php` renderöi otsikon, painikkeen ja modalin vain, jos palautemuoto on käytössä tehtävän asetuksissa ja opettajalla on capability `assignfeedback/airubric:generate`. Käytöstä poistettu palautemuoto ei tulosta näitä elementtejä eikä alusta painikkeen JavaScriptiä. Myös AJAX-endpoint estää generoinnin, jos palautemuoto on poistettu käytöstä.
 3. Kelpoisuus tarkistetaan:
    - tehtävässä on käytössä rubric-arviointi
    - opiskelijalla on palautus
@@ -200,6 +200,7 @@ Varmista lisäksi, että tehtävän varsinainen aihe ja suoritusohjeet ovat kuva
 - `tests/feedback_input_test.php`
 - `tests/feedback_events_test.php`
 - `tests/pdf_text_decoder_test.php`
+- `tests/plugin_enabled_test.php`
 
 ## 13. CI
 `.github/workflows/ci.yml` ajaa Moodle Plugin CI -tarkistukset GitHub Actionsissa push- ja pull request -tapahtumissa.
@@ -222,6 +223,16 @@ Kaikki pluginin PHP-tiedostot on lisensoitu GNU GPL v3 or later -lisenssillä Mo
 - Tehtävänannon liitteitä, kuvia ja linkkien kohteita ei lueta. AI kertoo tästä aiheutuvat arvioinnin rajoitteet. Dokumenttien poiminnan täydellisyyttä ei voida varmistaa; DOC- ja PDF-poiminta on edelleen best-effort.
 - Aja normaali Moodle-päivitys versioon `2026112001`. Tietokantarakenne ei muutu. Paikallinen systemprompt-kielikäännös voi ohittaa uuden oletuspromptin.
 - Uudet PHPUnit-testit tarkistavat lukukelvottoman liitteen sekä katkenneen ja valmiin AI-vastauksen käsittelyn. Pedagoginen laatu on testattava käytössä olevalla Azure-mallilla, myös väärän aiheen ja upotettujen ohitusohjeiden tapauksissa.
+
+## Korjaus 2.0.2
+
+Tehtävän palautemuotojen valinta ohjaa nyt tekoälypalautteen käyttöä Moodlen normaalin tehtäväkohtaisen käyttöönottotarkistuksen kautta. Kun opettaja poistaa palautemuodon käytöstä ja tallentaa asetukset, arviointinäkymässä ei tulosteta sen otsikkoa eikä Palaute-painiketta. Palvelupää estää myös suorat ja aiemmin avatusta arviointinäkymästä tehdyt generointipyynnöt palautemuodon ollessa pois käytöstä.
+
+Regressiotesti `tests/plugin_enabled_test.php` tarkistaa asetuksen vaihtamisen ja sen, ettei pois käytöstä oleva palautemuoto lisää painiketta arviointilomakkeeseen edes käyttöoikeudet omaavalle käyttäjälle. Aja normaali Moodle-päivitys versioon `2026112500` (julkaisu `2.0.2`); tietokantarakenne ei muutu.
+
+Käyttöliittymän tarkistus: poista palautemuoto käytöstä tehtävän asetuksissa, tallenna ja avaa opiskelijan arviointi uudelleen. Varmista, että otsikko ja painike puuttuvat. Ota palautemuoto uudelleen käyttöön ja varmista, että painike palaa arviointinäkymään käyttäjälle, jolla on tarvittava käyttöoikeus.
+
+Version 2.0.2 paikallinen tarkistus: kaikki PHP-tiedostot läpäisivät syntaksitarkistuksen. PHPUnit-ajossa läpäistiin 7 testiä ja 47 tarkistusta ympäristössä Moodle 5.3+, PHP 8.3.31 ja MariaDB 11.4.13. PHPUnit 11 ilmoitti neljä testiluokkien `@covers`-kommenttimetatietojen vanhentumishuomautusta. Moodle 4.5 -yhteensopivuutta ei tarkistettu tässä paikallisessa ajossa.
 
 ## Korjaus 2.0.1
 Arviointimatriisi tunnistetaan ohjaimen luokan perusteella sekä kelpoisuustarkistuksessa että matriisin viennissä. Tämä korjaa virheen `Call to undefined method gradingform_rubric_controller::get_method()`. Mukana on matriisin viennin regressiotesti.
